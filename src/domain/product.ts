@@ -72,6 +72,18 @@ export function validateProductDraft(draft: ProductDraft): string | null {
   if (draft.name.trim().length > 120) {
     return "商品名は120文字以内で入力してください。";
   }
+  const barcodeError = validateBarcode(draft.barcode);
+  if (barcodeError) {
+    return barcodeError;
+  }
+  return null;
+}
+
+export function validateBarcode(barcode: string): string | null {
+  const normalizedBarcode = barcode.trim();
+  if (normalizedBarcode.length > 0 && !/^\d+$/.test(normalizedBarcode)) {
+    return "バーコードは数字で入力してください。";
+  }
   return null;
 }
 

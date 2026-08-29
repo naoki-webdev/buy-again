@@ -25,11 +25,12 @@ import { Colors, Radius, Spacing } from "@/constants/theme";
 import {
   createEmptyDraft,
   validateProductDraft,
+  type Product,
   type ProductDraft,
 } from "@/domain/product";
 import { useProductStore } from "@/store/product-store";
 import { useProductDatabase } from "@/providers/database-provider";
-import { persistImageUri } from "@/services/image-storage";
+import { deleteImageUri, persistImageUri } from "@/services/image-storage";
 
 type ProductFormProps = {
   mode: "create" | "edit";
@@ -44,6 +45,9 @@ export function ProductFormScreen({ mode }: ProductFormProps) {
   const getById = useProductStore((state) => state.getById);
   const productId = typeof params.id === "string" ? Number(params.id) : null;
   const initialProduct = products.find((product) => product.id === productId);
+  const [loadedProduct, setLoadedProduct] = useState<Product | null>(null);
+  const sourceProduct = initialProduct ?? loadedProduct;
+  const originalImageUri = sourceProduct?.imageUri ?? null;
   const [draft, setDraft] = useState<ProductDraft>(() =>
     initialProduct
       ? {
@@ -77,6 +81,7 @@ export function ProductFormScreen({ mode }: ProductFormProps) {
     void getById(db, productId)
       .then((existingProduct) => {
         if (existingProduct) {
+          setLoadedProduct(existingProduct);
           setDraft({
             name: existingProduct.name,
             barcode: existingProduct.barcode ?? "",
@@ -117,11 +122,11 @@ export function ProductFormScreen({ mode }: ProductFormProps) {
       if (!result.canceled) {
         const uri = result.assets[0]?.uri;
         if (uri) {
-          updateDraft({ imageUri: await persistImageUri(uri) });
+          updateDraft({ imageUri: uri });
         }
       }
     } catch {
-      setError("写真を保存できませんでした。もう一度試してください。");
+      setError("写真を選択できませんでした。もう一度試してください。");
     }
   };
 
@@ -142,13 +147,29 @@ export function ProductFormScreen({ mode }: ProductFormProps) {
     saveInProgress.current = true;
     setIsSaving(true);
     setError(null);
+    let newlyPersistedImageUri: string | null = null;
+    let databaseSaveCompleted = false;
     try {
+      const imageUri =
+        draft.imageUri && draft.imageUri !== originalImageUri
+          ? await persistImageUri(draft.imageUri)
+          : draft.imageUri;
+      newlyPersistedImageUri =
+        imageUri && imageUri !== draft.imageUri ? imageUri : null;
+      const draftToSave = { ...draft, imageUri };
       const saved =
         mode === "create"
-          ? await add(db, draft)
-          : await update(db, productId as number, draft);
+          ? await add(db, draftToSave)
+          : await update(db, productId as number, draftToSave);
+      databaseSaveCompleted = true;
+      if (newlyPersistedImageUri && originalImageUri) {
+        await deleteImageUri(originalImageUri).catch(() => undefined);
+      }
       router.replace(`/product/${saved.id}`);
     } catch (saveError) {
+      if (newlyPersistedImageUri && !databaseSaveCompleted) {
+        await deleteImageUri(newlyPersistedImageUri).catch(() => undefined);
+      }
       setError(
         saveError instanceof Error ? saveError.message : "保存に失敗しました。",
       );

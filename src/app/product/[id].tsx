@@ -22,6 +22,7 @@ import { getRatingOption, type Product } from "@/domain/product";
 import { useProductStore } from "@/store/product-store";
 import { useProductDatabase } from "@/providers/database-provider";
 import { SafeAreaView } from "react-native-safe-area-context";
+import { deleteImageUri } from "@/services/image-storage";
 
 export default function ProductDetailScreen() {
   const db = useProductDatabase();
@@ -86,6 +87,7 @@ export default function ProductDetailScreen() {
         style: "destructive",
         onPress: () =>
           void remove(db, product.id)
+            .then(() => deleteImageUri(product.imageUri).catch(() => undefined))
             .then(() => router.replace("/products"))
             .catch(() => setDeleteError("商品を削除できませんでした。")),
       },

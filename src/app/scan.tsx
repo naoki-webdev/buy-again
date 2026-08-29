@@ -17,8 +17,9 @@ import { useSafeAreaInsets } from "react-native-safe-area-context";
 
 import { ErrorText, PrimaryButton } from "@/components/ui";
 import { Colors, Radius, Spacing } from "@/constants/theme";
-import { useProductStore } from "@/store/product-store";
+import { validateBarcode } from "@/domain/product";
 import { useProductDatabase } from "@/providers/database-provider";
+import { useProductStore } from "@/store/product-store";
 
 export default function ScanScreen() {
   const db = useProductDatabase();
@@ -37,6 +38,11 @@ export default function ScanScreen() {
       if (normalizedBarcode.length === 0) {
         setError("バーコードを入力してください。");
       }
+      return;
+    }
+    const barcodeError = validateBarcode(normalizedBarcode);
+    if (barcodeError) {
+      setError(barcodeError);
       return;
     }
     lookupInProgress.current = true;
@@ -74,14 +80,7 @@ export default function ScanScreen() {
             style={StyleSheet.absoluteFill}
             facing="back"
             barcodeScannerSettings={{
-              barcodeTypes: [
-                "ean13",
-                "ean8",
-                "upc_a",
-                "upc_e",
-                "code128",
-                "qr",
-              ],
+              barcodeTypes: ["ean13", "ean8", "upc_a", "upc_e"],
             }}
             onBarcodeScanned={hasScanned ? undefined : handleBarcodeScanned}
           />
@@ -112,30 +111,32 @@ export default function ScanScreen() {
             )}
           </View>
         )}
-        <View style={styles.overlay}>
-          <View style={[styles.scanHeader, { paddingTop: insets.top + 12 }]}>
-            <Pressable
-              onPress={() => router.back()}
-              accessibilityLabel="スキャンを閉じる"
-              accessibilityRole="button"
-              style={styles.closeButton}
-            >
-              <Text style={styles.closeGlyph}>×</Text>
-            </Pressable>
-            <Text style={styles.scanHeaderTitle}>バーコードをスキャン</Text>
-            <View style={styles.headerSpacer} />
+        {permission?.granted ? (
+          <View style={[styles.overlay, { paddingBottom: insets.bottom + 30 }]}>
+            <View style={[styles.scanHeader, { paddingTop: insets.top + 12 }]}>
+              <Pressable
+                onPress={() => router.back()}
+                accessibilityLabel="スキャンを閉じる"
+                accessibilityRole="button"
+                style={styles.closeButton}
+              >
+                <Text style={styles.closeGlyph}>×</Text>
+              </Pressable>
+              <Text style={styles.scanHeaderTitle}>バーコードをスキャン</Text>
+              <View style={styles.headerSpacer} />
+            </View>
+            <View style={styles.focusArea}>
+              <View style={[styles.corner, styles.cornerTopLeft]} />
+              <View style={[styles.corner, styles.cornerTopRight]} />
+              <View style={[styles.corner, styles.cornerBottomLeft]} />
+              <View style={[styles.corner, styles.cornerBottomRight]} />
+              <View style={styles.scanLine} />
+            </View>
+            <Text style={styles.helperText}>
+              JAN、EAN、UPCバーコードを枠の中に合わせてください
+            </Text>
           </View>
-          <View style={styles.focusArea}>
-            <View style={[styles.corner, styles.cornerTopLeft]} />
-            <View style={[styles.corner, styles.cornerTopRight]} />
-            <View style={[styles.corner, styles.cornerBottomLeft]} />
-            <View style={[styles.corner, styles.cornerBottomRight]} />
-            <View style={styles.scanLine} />
-          </View>
-          <Text style={styles.helperText}>
-            バーコードを枠の中に合わせてください
-          </Text>
-        </View>
+        ) : null}
       </View>
 
       <View style={[styles.manualArea, { paddingBottom: insets.bottom + 24 }]}>

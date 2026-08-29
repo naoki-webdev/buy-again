@@ -3,6 +3,10 @@ import { Directory, File, Paths } from "expo-file-system";
 const imageDirectory = new Directory(Paths.document, "product-images");
 
 export async function persistImageUri(uri: string): Promise<string> {
+  if (isManagedImageUri(uri)) {
+    return uri;
+  }
+
   imageDirectory.create({ idempotent: true, intermediates: true });
 
   const source = new File(uri);
@@ -11,6 +15,31 @@ export async function persistImageUri(uri: string): Promise<string> {
     imageDirectory,
     `product-${Date.now()}-${Math.random().toString(36).slice(2)}${extension}`,
   );
-  await source.copy(destination);
+  try {
+    await source.copy(destination);
+  } catch (error) {
+    if (destination.exists) {
+      destination.delete();
+    }
+    throw error;
+  }
   return destination.uri;
+}
+
+export async function deleteImageUri(uri: string | null): Promise<void> {
+  if (!uri || !isManagedImageUri(uri)) {
+    return;
+  }
+
+  const file = new File(uri);
+  if (file.exists) {
+    file.delete();
+  }
+}
+
+function isManagedImageUri(uri: string): boolean {
+  const directoryPrefix = imageDirectory.uri.endsWith("/")
+    ? imageDirectory.uri
+    : `${imageDirectory.uri}/`;
+  return uri.startsWith(directoryPrefix);
 }

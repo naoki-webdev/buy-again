@@ -21,7 +21,7 @@ export {
 };
 export type { ProductDatabase, ProductRow } from "@/data/product-repository";
 
-export const DATABASE_VERSION = 1;
+export const DATABASE_VERSION = 2;
 
 class WebProductDatabase implements ProductDatabase {
   private rows: ProductRow[] = readRows();

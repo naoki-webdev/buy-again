@@ -81,17 +81,22 @@ export async function createProduct(
   const barcode = draft.barcode.trim();
   await ensureBarcodeIsAvailable(db, barcode);
   const now = new Date().toISOString();
-  const result = await db.runAsync(
-    `INSERT INTO products (name, barcode, image_uri, rating, note, created_at, updated_at)
-     VALUES (?, ?, ?, ?, ?, ?, ?)`,
-    draft.name.trim(),
-    barcode || null,
-    draft.imageUri,
-    draft.rating,
-    draft.note.trim(),
-    now,
-    now,
-  );
+  let result: SQLiteRunResult;
+  try {
+    result = await db.runAsync(
+      `INSERT INTO products (name, barcode, image_uri, rating, note, created_at, updated_at)
+       VALUES (?, ?, ?, ?, ?, ?, ?)`,
+      draft.name.trim(),
+      barcode || null,
+      draft.imageUri,
+      draft.rating,
+      draft.note.trim(),
+      now,
+      now,
+    );
+  } catch (error) {
+    throw normalizeWriteError(error);
+  }
   const product = await getProductById(db, result.lastInsertRowId);
   if (!product) {
     throw new Error("商品を登録できませんでした。");
@@ -107,18 +112,22 @@ export async function updateProduct(
   const barcode = draft.barcode.trim();
   await ensureBarcodeIsAvailable(db, barcode, id);
   const now = new Date().toISOString();
-  await db.runAsync(
-    `UPDATE products
-     SET name = ?, barcode = ?, image_uri = ?, rating = ?, note = ?, updated_at = ?
-     WHERE id = ?`,
-    draft.name.trim(),
-    barcode || null,
-    draft.imageUri,
-    draft.rating,
-    draft.note.trim(),
-    now,
-    id,
-  );
+  try {
+    await db.runAsync(
+      `UPDATE products
+       SET name = ?, barcode = ?, image_uri = ?, rating = ?, note = ?, updated_at = ?
+       WHERE id = ?`,
+      draft.name.trim(),
+      barcode || null,
+      draft.imageUri,
+      draft.rating,
+      draft.note.trim(),
+      now,
+      id,
+    );
+  } catch (error) {
+    throw normalizeWriteError(error);
+  }
   const product = await getProductById(db, id);
   if (!product) {
     throw new Error("商品が見つかりません。");
@@ -148,4 +157,16 @@ async function ensureBarcodeIsAvailable(
       "このバーコードの商品はすでに登録されています。既存の記録を編集してください。",
     );
   }
+}
+
+function normalizeWriteError(error: unknown): Error | unknown {
+  if (
+    error instanceof Error &&
+    /unique constraint failed: products\.barcode/i.test(error.message)
+  ) {
+    return new Error(
+      "このバーコードの商品はすでに登録されています。既存の記録を編集してください。",
+    );
+  }
+  return error;
 }

@@ -19,7 +19,7 @@ export {
 };
 export type { ProductDatabase, ProductRow } from "@/data/product-repository";
 
-export const DATABASE_VERSION = 1;
+export const DATABASE_VERSION = 2;
 
 export async function migrateDatabase(db: SQLiteDatabase): Promise<void> {
   await db.withTransactionAsync(async () => {
@@ -47,7 +47,23 @@ export async function migrateDatabase(db: SQLiteDatabase): Promise<void> {
           updated_at TEXT NOT NULL
         );
         CREATE INDEX IF NOT EXISTS idx_products_created_at ON products(created_at DESC);
-        CREATE INDEX IF NOT EXISTS idx_products_barcode ON products(barcode);
+      `);
+    }
+
+    if (currentVersion < 2) {
+      await db.execAsync(`
+        UPDATE products
+        SET barcode = NULL
+        WHERE barcode IS NOT NULL
+          AND id < (
+            SELECT MAX(duplicate.id)
+            FROM products AS duplicate
+            WHERE duplicate.barcode = products.barcode
+          );
+        DROP INDEX IF EXISTS idx_products_barcode;
+        CREATE UNIQUE INDEX IF NOT EXISTS idx_products_barcode_unique
+          ON products(barcode)
+          WHERE barcode IS NOT NULL;
       `);
     }
 

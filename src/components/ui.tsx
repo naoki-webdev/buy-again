@@ -22,6 +22,7 @@ import {
   type Rating,
   RATING_OPTIONS,
 } from "@/domain/product";
+import { useTranslation } from "@/i18n";
 
 export function Screen({
   children,
@@ -179,6 +180,7 @@ export function RatingBadge({
   rating: Rating;
   large?: boolean;
 }) {
+  const { t } = useTranslation();
   const option = getRatingOption(rating);
   return (
     <View
@@ -196,7 +198,7 @@ export function RatingBadge({
           large && styles.largeRatingText,
         ]}
       >
-        {option.label}
+        {t(option.labelKey)}
       </Text>
     </View>
   );
@@ -209,6 +211,7 @@ export function RatingPicker({
   value: Rating;
   onChange: (value: Rating) => void;
 }) {
+  const { t } = useTranslation();
   return (
     <View style={styles.ratingGrid}>
       {RATING_OPTIONS.map((option) => {
@@ -242,7 +245,7 @@ export function RatingPicker({
                 selected && { color: option.color, fontWeight: "700" },
               ]}
             >
-              {option.label}
+              {t(option.labelKey)}
             </Text>
             {selected ? (
               <Text style={[styles.checkmark, { color: option.color }]}>✓</Text>
@@ -261,12 +264,13 @@ export function ProductCard({
   product: Product;
   compact?: boolean;
 }) {
+  const { t } = useTranslation();
   const option = getRatingOption(product.rating);
   return (
     <Pressable
       onPress={() => router.push(`/product/${product.id}`)}
       accessibilityRole="button"
-      accessibilityLabel={`${product.brand ? `${product.brand}、` : ""}${product.name}、${option.label}`}
+      accessibilityLabel={`${product.brand ? `${product.brand}, ` : ""}${product.name}, ${t(option.labelKey)}`}
       style={({ pressed }) => [
         styles.productCard,
         compact && styles.compactProductCard,
@@ -424,21 +428,25 @@ export function EmptyState({
 }
 
 export function LoadingState() {
+  const { t } = useTranslation();
   return (
     <View style={styles.loadingState}>
-      <Text style={styles.loadingText}>記録を読み込んでいます…</Text>
+      <Text style={styles.loadingText}>{t("common.loading")}</Text>
     </View>
   );
 }
 
 export function DatabaseErrorState({ onRetry }: { onRetry: () => void }) {
+  const { t } = useTranslation();
   return (
     <SafeAreaView edges={["top", "bottom"]} style={styles.databaseErrorState}>
-      <Text style={styles.databaseErrorTitle}>記録を読み込めませんでした</Text>
-      <Text style={styles.databaseErrorDescription}>
-        アプリを再起動しても改善しない場合は、端末の空き容量を確認してください。
+      <Text style={styles.databaseErrorTitle}>
+        {t("database.load_failed_title")}
       </Text>
-      <PrimaryButton label="もう一度試す" onPress={onRetry} />
+      <Text style={styles.databaseErrorDescription}>
+        {t("database.load_failed_description")}
+      </Text>
+      <PrimaryButton label={t("common.retry")} onPress={onRetry} />
     </SafeAreaView>
   );
 }

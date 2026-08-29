@@ -18,6 +18,7 @@ import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { ErrorText, PrimaryButton } from "@/components/ui";
 import { Colors, Radius, Spacing } from "@/constants/theme";
 import { validateBarcode } from "@/domain/product";
+import { useTranslation } from "@/i18n";
 import { useProductDatabase } from "@/providers/database-provider";
 import { lookupOpenFoodFactsProduct } from "@/services/open-food-facts";
 import { useProductStore } from "@/store/product-store";
@@ -25,6 +26,7 @@ import { useProductStore } from "@/store/product-store";
 export default function ScanScreen() {
   const db = useProductDatabase();
   const insets = useSafeAreaInsets();
+  const { language, t } = useTranslation();
   const findByBarcode = useProductStore((state) => state.findByBarcode);
   const [permission, requestPermission] = useCameraPermissions();
   const [manualBarcode, setManualBarcode] = useState("");
@@ -37,13 +39,13 @@ export default function ScanScreen() {
     const normalizedBarcode = barcode.trim();
     if (normalizedBarcode.length === 0 || lookupInProgress.current) {
       if (normalizedBarcode.length === 0) {
-        setError("バーコードを入力してください。");
+        setError(t("errors.barcode_required"));
       }
       return;
     }
     const barcodeError = validateBarcode(normalizedBarcode);
     if (barcodeError) {
-      setError(barcodeError);
+      setError(t(`errors.${barcodeError}`));
       return;
     }
     lookupInProgress.current = true;
@@ -57,7 +59,10 @@ export default function ScanScreen() {
       } else {
         let externalProduct = null;
         try {
-          externalProduct = await lookupOpenFoodFactsProduct(normalizedBarcode);
+          externalProduct = await lookupOpenFoodFactsProduct(
+            normalizedBarcode,
+            language,
+          );
         } catch {
           externalProduct = null;
         }
@@ -79,7 +84,7 @@ export default function ScanScreen() {
       }
     } catch {
       setHasScanned(false);
-      setError("商品を検索できませんでした。もう一度試してください。");
+      setError(t("errors.lookup_failed"));
     } finally {
       lookupInProgress.current = false;
       setIsFinding(false);
@@ -106,15 +111,17 @@ export default function ScanScreen() {
           <View style={styles.permissionPanel}>
             <Text style={styles.permissionIcon}>⌕</Text>
             <Text style={styles.permissionTitle}>
-              カメラでバーコードを読み取る
+              {t("scan.permission_title")}
             </Text>
             <Text style={styles.permissionDescription}>
-              カメラへのアクセスを許可すると、商品をすばやく検索できます。
+              {t("scan.permission_description")}
             </Text>
             {permission ? (
               <PrimaryButton
                 label={
-                  permission.canAskAgain ? "カメラを許可する" : "設定を開く"
+                  permission.canAskAgain
+                    ? t("scan.allow_camera")
+                    : t("scan.open_settings")
                 }
                 onPress={() =>
                   void (permission.canAskAgain
@@ -124,7 +131,7 @@ export default function ScanScreen() {
               />
             ) : (
               <Text style={styles.permissionDescription}>
-                カメラを準備しています…
+                {t("scan.preparing_camera")}
               </Text>
             )}
           </View>
@@ -134,13 +141,13 @@ export default function ScanScreen() {
             <View style={[styles.scanHeader, { paddingTop: insets.top + 12 }]}>
               <Pressable
                 onPress={() => router.back()}
-                accessibilityLabel="スキャンを閉じる"
+                accessibilityLabel={t("scan.close")}
                 accessibilityRole="button"
                 style={styles.closeButton}
               >
                 <Text style={styles.closeGlyph}>×</Text>
               </Pressable>
-              <Text style={styles.scanHeaderTitle}>バーコードをスキャン</Text>
+              <Text style={styles.scanHeaderTitle}>{t("scan.title")}</Text>
               <View style={styles.headerSpacer} />
             </View>
             <View style={styles.focusArea}>
@@ -150,9 +157,7 @@ export default function ScanScreen() {
               <View style={[styles.corner, styles.cornerBottomRight]} />
               <View style={styles.scanLine} />
             </View>
-            <Text style={styles.helperText}>
-              JAN、EAN、UPCバーコードを枠の中に合わせてください
-            </Text>
+            <Text style={styles.helperText}>{t("scan.helper")}</Text>
           </View>
         ) : null}
       </View>
@@ -160,8 +165,8 @@ export default function ScanScreen() {
       <View style={[styles.manualArea, { paddingBottom: insets.bottom + 24 }]}>
         <View style={styles.manualHeading}>
           <View>
-            <Text style={styles.manualEyebrow}>CAMERA NOT HANDY?</Text>
-            <Text style={styles.manualTitle}>番号を直接入力</Text>
+            <Text style={styles.manualEyebrow}>{t("scan.manual_eyebrow")}</Text>
+            <Text style={styles.manualTitle}>{t("scan.manual_title")}</Text>
           </View>
           <Text style={styles.manualArrow}>↓</Text>
         </View>
@@ -169,7 +174,7 @@ export default function ScanScreen() {
           <TextInput
             value={manualBarcode}
             onChangeText={setManualBarcode}
-            placeholder="バーコード番号"
+            placeholder={t("scan.barcode_placeholder")}
             placeholderTextColor={Colors.muted}
             style={styles.manualInput}
             keyboardType="number-pad"
@@ -178,7 +183,7 @@ export default function ScanScreen() {
           />
           <Pressable
             onPress={() => void lookup(manualBarcode)}
-            accessibilityLabel="バーコードを検索"
+            accessibilityLabel={t("scan.search")}
             accessibilityRole="button"
             style={({ pressed }) => [
               styles.searchButton,
@@ -190,7 +195,7 @@ export default function ScanScreen() {
         </View>
         <ErrorText message={error} />
         {isFinding ? (
-          <Text style={styles.findingText}>商品情報を確認しています…</Text>
+          <Text style={styles.findingText}>{t("scan.finding")}</Text>
         ) : null}
       </View>
     </View>

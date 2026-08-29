@@ -28,6 +28,7 @@ import {
   type Product,
   type ProductDraft,
 } from "@/domain/product";
+import { getLocalizedErrorMessage, useTranslation } from "@/i18n";
 import { useProductStore } from "@/store/product-store";
 import { useProductDatabase } from "@/providers/database-provider";
 import { deleteImageUri, persistImageUri } from "@/services/image-storage";
@@ -47,6 +48,7 @@ type ProductFormParams = {
 
 export function ProductFormScreen({ mode }: ProductFormProps) {
   const db = useProductDatabase();
+  const { t } = useTranslation();
   const params = useLocalSearchParams<ProductFormParams>();
   const products = useProductStore((state) => state.products);
   const add = useProductStore((state) => state.add);
@@ -110,15 +112,15 @@ export function ProductFormScreen({ mode }: ProductFormProps) {
             note: existingProduct.note,
           });
         } else {
-          setError("商品が見つかりません。");
+          setError(t("errors.product_not_found"));
         }
         setIsLoading(false);
       })
       .catch(() => {
-        setError("商品を読み込めませんでした。");
+        setError(t("errors.product_load_failed"));
         setIsLoading(false);
       });
-  }, [db, getById, initialProduct, mode, productId]);
+  }, [db, getById, initialProduct, mode, productId, t]);
 
   const updateDraft = (changes: Partial<ProductDraft>) =>
     setDraft((current) => ({ ...current, ...changes }));
@@ -129,7 +131,7 @@ export function ProductFormScreen({ mode }: ProductFormProps) {
         await ImagePicker.requestMediaLibraryPermissionsAsync();
       if (!permission.granted) {
         setPhotoPermissionBlocked(!permission.canAskAgain);
-        setError("写真へのアクセスを許可すると、商品写真を登録できます。");
+        setError(t("errors.photo_permission"));
         return;
       }
       setPhotoPermissionBlocked(false);
@@ -146,7 +148,7 @@ export function ProductFormScreen({ mode }: ProductFormProps) {
         }
       }
     } catch {
-      setError("写真を選択できませんでした。もう一度試してください。");
+      setError(t("errors.photo_select_failed"));
     }
   };
 
@@ -156,11 +158,11 @@ export function ProductFormScreen({ mode }: ProductFormProps) {
     }
     const validationError = validateProductDraft(draft);
     if (validationError) {
-      setError(validationError);
+      setError(t(`errors.${validationError}`));
       return;
     }
     if (mode === "edit" && productId === null) {
-      setError("商品が見つかりません。");
+      setError(t("errors.product_not_found"));
       return;
     }
 
@@ -190,9 +192,7 @@ export function ProductFormScreen({ mode }: ProductFormProps) {
       if (newlyPersistedImageUri && !databaseSaveCompleted) {
         await deleteImageUri(newlyPersistedImageUri).catch(() => undefined);
       }
-      setError(
-        saveError instanceof Error ? saveError.message : "保存に失敗しました。",
-      );
+      setError(getLocalizedErrorMessage(saveError, t, "errors.save_failed"));
     } finally {
       saveInProgress.current = false;
       setIsSaving(false);
@@ -202,7 +202,7 @@ export function ProductFormScreen({ mode }: ProductFormProps) {
   if (isLoading) {
     return (
       <View style={styles.loading}>
-        <Text style={styles.loadingText}>商品を読み込んでいます…</Text>
+        <Text style={styles.loadingText}>{t("form.loading")}</Text>
       </View>
     );
   }
@@ -220,37 +220,43 @@ export function ProductFormScreen({ mode }: ProductFormProps) {
         >
           <View style={styles.topBar}>
             <IconButton
-              label="前の画面に戻る"
+              label={t("common.back")}
               glyph="‹"
               onPress={() => router.back()}
             />
             <Text style={styles.topBarTitle}>
-              {mode === "create" ? "商品を登録" : "商品を編集"}
+              {mode === "create"
+                ? t("form.create_title")
+                : t("form.edit_title")}
             </Text>
             <View style={styles.topBarSpacer} />
           </View>
 
           <View style={styles.formIntro}>
             <Text style={styles.kicker}>
-              {mode === "create" ? "NEW MEMORY" : "UPDATE MEMORY"}
+              {mode === "create"
+                ? t("form.create_kicker")
+                : t("form.edit_kicker")}
             </Text>
             <Text style={styles.title}>
-              {mode === "create" ? "次の自分へ、ひとこと。" : "記録を整える。"}
+              {mode === "create"
+                ? t("form.create_heading")
+                : t("form.edit_heading")}
             </Text>
             <Text style={styles.description}>
               {mode === "create"
-                ? "評価はあとからでも変えられます。今の印象を残しておきましょう。"
-                : "今の自分の感覚に合わせて、評価やメモを更新できます。"}
+                ? t("form.create_description")
+                : t("form.edit_description")}
             </Text>
           </View>
 
           {isAutoFilled ? (
             <View style={styles.autoFillNotice}>
               <Text style={styles.autoFillTitle}>
-                商品情報を自動入力しました
+                {t("form.auto_fill_title")}
               </Text>
               <Text style={styles.autoFillDescription}>
-                Open Food Factsの情報です。内容を確認してから保存してください。
+                {t("form.auto_fill_description")}
               </Text>
             </View>
           ) : null}
@@ -265,11 +271,15 @@ export function ProductFormScreen({ mode }: ProductFormProps) {
             ) : (
               <View style={styles.photoPlaceholder}>
                 <Text style={styles.photoGlyph}>▧</Text>
-                <Text style={styles.photoPlaceholderText}>写真なし</Text>
+                <Text style={styles.photoPlaceholderText}>
+                  {t("common.no_image")}
+                </Text>
               </View>
             )}
             <SecondaryButton
-              label={draft.imageUri ? "写真を変更" : "商品写真を追加"}
+              label={
+                draft.imageUri ? t("form.image_change") : t("form.image_add")
+              }
               glyph="▧"
               onPress={() => void pickImage()}
             />
@@ -277,38 +287,38 @@ export function ProductFormScreen({ mode }: ProductFormProps) {
 
           <View style={styles.formFields}>
             <Field
-              label="商品名"
-              placeholder="例：無糖カフェラテ"
+              label={t("form.product_name")}
+              placeholder={t("form.product_name_placeholder")}
               value={draft.name}
               onChangeText={(name) => updateDraft({ name })}
               autoFocus={mode === "create" && !isAutoFilled}
             />
             <Field
-              label="バーコード"
-              hint="任意"
-              placeholder="スキャンまたは入力"
+              label={t("form.barcode")}
+              hint={t("common.optional")}
+              placeholder={t("form.barcode_placeholder")}
               value={draft.barcode}
               onChangeText={(barcode) => updateDraft({ barcode })}
               keyboardType="number-pad"
             />
             <Field
-              label="ブランド"
-              hint="任意"
-              placeholder="例：メーカー名"
+              label={t("form.brand")}
+              hint={t("common.optional")}
+              placeholder={t("form.brand_placeholder")}
               value={draft.brand}
               onChangeText={(brand) => updateDraft({ brand })}
             />
             <View style={styles.ratingSection}>
-              <Text style={styles.fieldLabel}>評価</Text>
+              <Text style={styles.fieldLabel}>{t("form.rating")}</Text>
               <RatingPicker
                 value={draft.rating}
                 onChange={(rating) => updateDraft({ rating })}
               />
             </View>
             <Field
-              label="メモ"
-              hint="任意"
-              placeholder="味、使い心地、買った場所など"
+              label={t("form.note")}
+              hint={t("common.optional")}
+              placeholder={t("form.note_placeholder")}
               value={draft.note}
               onChangeText={(note) => updateDraft({ note })}
               multiline
@@ -318,7 +328,7 @@ export function ProductFormScreen({ mode }: ProductFormProps) {
           <ErrorText message={error} />
           {photoPermissionBlocked ? (
             <SecondaryButton
-              label="写真の設定を開く"
+              label={t("form.photo_settings")}
               onPress={() => void Linking.openSettings()}
             />
           ) : null}
@@ -326,15 +336,18 @@ export function ProductFormScreen({ mode }: ProductFormProps) {
             <PrimaryButton
               label={
                 isSaving
-                  ? "保存中…"
+                  ? t("form.saving")
                   : mode === "create"
-                    ? "商品を登録する"
-                    : "変更を保存"
+                    ? t("form.register")
+                    : t("form.save_changes")
               }
               onPress={() => void save()}
               disabled={isSaving}
             />
-            <SecondaryButton label="キャンセル" onPress={() => router.back()} />
+            <SecondaryButton
+              label={t("common.cancel")}
+              onPress={() => router.back()}
+            />
           </View>
         </ScrollView>
       </KeyboardAvoidingView>

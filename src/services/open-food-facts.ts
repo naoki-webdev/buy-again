@@ -30,8 +30,11 @@ export type OpenFoodFactsProduct = {
   imageUri: string | null;
 };
 
+export type ProductLookupLanguage = "ja" | "en";
+
 export async function lookupOpenFoodFactsProduct(
   barcode: string,
+  language: ProductLookupLanguage = "en",
   fetcher: OpenFoodFactsFetcher = fetch,
 ): Promise<OpenFoodFactsProduct | null> {
   const normalizedBarcode = barcode.trim();
@@ -41,7 +44,7 @@ export async function lookupOpenFoodFactsProduct(
 
   const query = new URLSearchParams({
     product_type: "food",
-    lc: "ja",
+    lc: language,
     fields:
       "product_name_ja,product_name,product_name_en,brands,image_front_url,image_url",
   });
@@ -68,13 +71,16 @@ export async function lookupOpenFoodFactsProduct(
     }
 
     const payload: unknown = await response.json();
-    return parseProductResponse(payload);
+    return parseProductResponse(payload, language);
   } finally {
     clearTimeout(timeoutId);
   }
 }
 
-function parseProductResponse(payload: unknown): OpenFoodFactsProduct | null {
+function parseProductResponse(
+  payload: unknown,
+  language: ProductLookupLanguage,
+): OpenFoodFactsProduct | null {
   if (!isRecord(payload)) {
     return null;
   }
@@ -91,7 +97,7 @@ function parseProductResponse(payload: unknown): OpenFoodFactsProduct | null {
     return null;
   }
 
-  const productName = selectProductName(product);
+  const productName = selectProductName(product, language);
   const brand = normalizeText(product.brands);
   const imageUri = normalizeImageUri(
     product.image_front_url ?? product.image_url,
@@ -105,12 +111,19 @@ function parseProductResponse(payload: unknown): OpenFoodFactsProduct | null {
 
 function selectProductName(
   product: OpenFoodFactsProductResponse,
+  language: ProductLookupLanguage,
 ): string | null {
-  return (
-    normalizeText(product.product_name_ja) ??
-    normalizeText(product.product_name) ??
-    normalizeText(product.product_name_en)
-  );
+  const candidates =
+    language === "ja"
+      ? [product.product_name_ja, product.product_name, product.product_name_en]
+      : [
+          product.product_name_en,
+          product.product_name,
+          product.product_name_ja,
+        ];
+
+  const productName = candidates.map(normalizeText).find(Boolean) ?? null;
+  return productName ? productName.slice(0, 120).trim() : null;
 }
 
 function normalizeText(value: unknown): string | null {

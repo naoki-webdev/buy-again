@@ -4,6 +4,7 @@ import { StatusBar } from "expo-status-bar";
 import { useEffect } from "react";
 
 import { DatabaseErrorState } from "@/components/ui";
+import { I18nProvider } from "@/i18n";
 import {
   DatabaseProvider,
   useProductDatabase,
@@ -37,23 +38,26 @@ function AppDataLoader() {
 
 export default function RootLayout() {
   return (
-    <ThemeProvider value={DefaultTheme}>
-      <DatabaseProvider>
-        <AppDataLoader />
-        <StatusBar style="dark" />
-        <Stack
-          screenOptions={{
-            headerShown: false,
-            contentStyle: { backgroundColor: "#F7F5EF" },
-          }}
-        >
-          <Stack.Screen name="(tabs)" />
-          <Stack.Screen name="scan" options={{ presentation: "modal" }} />
-          <Stack.Screen name="add" />
-          <Stack.Screen name="product/[id]" />
-          <Stack.Screen name="product/edit/[id]" />
-        </Stack>
-      </DatabaseProvider>
-    </ThemeProvider>
+    <I18nProvider>
+      <ThemeProvider value={DefaultTheme}>
+        <DatabaseProvider>
+          <AppDataLoader />
+          <StatusBar style="dark" />
+          <Stack
+            screenOptions={{
+              headerShown: false,
+              contentStyle: { backgroundColor: "#F7F5EF" },
+            }}
+          >
+            <Stack.Screen name="(tabs)" />
+            <Stack.Screen name="scan" options={{ presentation: "modal" }} />
+            <Stack.Screen name="add" />
+            <Stack.Screen name="settings" />
+            <Stack.Screen name="product/[id]" />
+            <Stack.Screen name="product/edit/[id]" />
+          </Stack>
+        </DatabaseProvider>
+      </ThemeProvider>
+    </I18nProvider>
   );
 }

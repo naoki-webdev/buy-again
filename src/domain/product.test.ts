@@ -4,9 +4,7 @@ describe("product domain", () => {
   it("数字以外のバーコード文字列を拒否する", () => {
     const draft = { ...createEmptyDraft(), name: "商品", barcode: "AB-123" };
 
-    expect(validateProductDraft(draft)).toBe(
-      "バーコードは数字で入力してください。",
-    );
+    expect(validateProductDraft(draft)).toBe("barcode_digits_only");
   });
 
   it("手入力のバーコードは数字列を許容する", () => {

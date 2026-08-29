@@ -21,10 +21,13 @@ export type ProductDraft = {
   note: string;
 };
 
+export type ProductValidationError =
+  "product_name_required" | "product_name_too_long" | "barcode_digits_only";
+
 export type RatingOption = {
   value: Rating;
-  label: string;
-  shortLabel: string;
+  labelKey: string;
+  shortLabelKey: string;
   color: string;
   backgroundColor: string;
 };
@@ -32,29 +35,29 @@ export type RatingOption = {
 export const RATING_OPTIONS: readonly RatingOption[] = [
   {
     value: "buy_again",
-    label: "また買う",
-    shortLabel: "また買う",
+    labelKey: "rating.buy_again.label",
+    shortLabelKey: "rating.buy_again.short",
     color: "#285243",
     backgroundColor: "#DCE8E0",
   },
   {
     value: "buy_if_cheap",
-    label: "安ければ買う",
-    shortLabel: "安ければ",
+    labelKey: "rating.buy_if_cheap.label",
+    shortLabelKey: "rating.buy_if_cheap.short",
     color: "#C68B35",
     backgroundColor: "#F8ECCC",
   },
   {
     value: "maybe",
-    label: "微妙",
-    shortLabel: "微妙",
+    labelKey: "rating.maybe.label",
+    shortLabelKey: "rating.maybe.short",
     color: "#60706B",
     backgroundColor: "#E3E8E4",
   },
   {
     value: "never_again",
-    label: "二度と買わない",
-    shortLabel: "避ける",
+    labelKey: "rating.never_again.label",
+    shortLabelKey: "rating.never_again.short",
     color: "#B9534C",
     backgroundColor: "#F5E0D8",
   },
@@ -67,12 +70,14 @@ export function getRatingOption(rating: Rating): RatingOption {
   );
 }
 
-export function validateProductDraft(draft: ProductDraft): string | null {
+export function validateProductDraft(
+  draft: ProductDraft,
+): ProductValidationError | null {
   if (draft.name.trim().length === 0) {
-    return "商品名を入力してください。";
+    return "product_name_required";
   }
   if (draft.name.trim().length > 120) {
-    return "商品名は120文字以内で入力してください。";
+    return "product_name_too_long";
   }
   const barcodeError = validateBarcode(draft.barcode);
   if (barcodeError) {
@@ -81,10 +86,12 @@ export function validateProductDraft(draft: ProductDraft): string | null {
   return null;
 }
 
-export function validateBarcode(barcode: string): string | null {
+export function validateBarcode(
+  barcode: string,
+): ProductValidationError | null {
   const normalizedBarcode = barcode.trim();
   if (normalizedBarcode.length > 0 && !/^\d+$/.test(normalizedBarcode)) {
-    return "バーコードは数字で入力してください。";
+    return "barcode_digits_only";
   }
   return null;
 }

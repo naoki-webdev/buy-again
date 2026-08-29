@@ -19,13 +19,15 @@ import {
 } from "@/components/ui";
 import { Colors, Radius, Spacing } from "@/constants/theme";
 import { getRatingOption, type Product } from "@/domain/product";
-import { useProductStore } from "@/store/product-store";
+import { useTranslation } from "@/i18n";
 import { useProductDatabase } from "@/providers/database-provider";
-import { SafeAreaView } from "react-native-safe-area-context";
 import { deleteImageUri } from "@/services/image-storage";
+import { useProductStore } from "@/store/product-store";
+import { SafeAreaView } from "react-native-safe-area-context";
 
 export default function ProductDetailScreen() {
   const db = useProductDatabase();
+  const { language, t } = useTranslation();
   const { id } = useLocalSearchParams<{ id: string }>();
   const products = useProductStore((state) => state.products);
   const getById = useProductStore((state) => state.getById);
@@ -50,10 +52,10 @@ export default function ProductDetailScreen() {
         setLookupFinished(true);
       })
       .catch(() => {
-        setLookupError("商品を読み込めませんでした。");
+        setLookupError(t("detail.load_failed"));
         setLookupFinished(true);
       });
-  }, [db, getById, id, storedProduct]);
+  }, [db, getById, id, storedProduct, t]);
 
   if (isLoading) {
     return <LoadingState />;
@@ -64,10 +66,10 @@ export default function ProductDetailScreen() {
       <SafeAreaView edges={["top", "bottom"]} style={styles.root}>
         <View style={styles.notFound}>
           <Text style={styles.notFoundTitle}>
-            {lookupError ?? "商品が見つかりません"}
+            {lookupError ?? t("detail.not_found")}
           </Text>
           <SecondaryButton
-            label="商品一覧へ戻る"
+            label={t("detail.back_to_products")}
             onPress={() => router.replace("/products")}
           />
         </View>
@@ -80,16 +82,16 @@ export default function ProductDetailScreen() {
   const isAvoid = product.rating === "never_again";
 
   const handleDelete = () => {
-    Alert.alert("この商品を削除しますか？", "削除した記録は元に戻せません。", [
-      { text: "キャンセル", style: "cancel" },
+    Alert.alert(t("detail.delete_title"), t("detail.delete_description"), [
+      { text: t("common.cancel"), style: "cancel" },
       {
-        text: "削除する",
+        text: t("common.delete"),
         style: "destructive",
         onPress: () =>
           void remove(db, product.id)
             .then(() => deleteImageUri(product.imageUri).catch(() => undefined))
             .then(() => router.replace("/products"))
-            .catch(() => setDeleteError("商品を削除できませんでした。")),
+            .catch(() => setDeleteError(t("detail.delete_failed"))),
       },
     ]);
   };
@@ -102,13 +104,13 @@ export default function ProductDetailScreen() {
       >
         <View style={styles.topBar}>
           <IconButton
-            label="前の画面に戻る"
+            label={t("common.back")}
             glyph="‹"
             onPress={() => router.back()}
           />
-          <Text style={styles.topBarTitle}>商品詳細</Text>
+          <Text style={styles.topBarTitle}>{t("detail.title")}</Text>
           <IconButton
-            label="商品を編集する"
+            label={t("detail.edit_label")}
             glyph="✎"
             onPress={() => router.push(`/product/edit/${product.id}`)}
           />
@@ -151,35 +153,35 @@ export default function ProductDetailScreen() {
         >
           <Text style={[styles.outcomeEyebrow, { color: option.color }]}>
             {isPositive
-              ? "次に買うなら"
+              ? t("detail.next_buy")
               : isAvoid
-                ? "次は避ける"
-                : "いまの評価"}
+                ? t("detail.avoid_next")
+                : t("detail.current_rating")}
           </Text>
           <Text style={[styles.outcomeText, { color: option.color }]}>
-            {option.label}
+            {t(option.labelKey)}
           </Text>
           <RatingBadge rating={product.rating} large />
         </View>
 
         <View style={styles.infoCard}>
-          <Text style={styles.infoLabel}>メモ</Text>
+          <Text style={styles.infoLabel}>{t("detail.note_label")}</Text>
           <Text style={[styles.note, !product.note && styles.mutedNote]}>
-            {product.note || "メモはまだありません。"}
+            {product.note || t("detail.no_note")}
           </Text>
         </View>
 
         <View style={styles.metaRow}>
           <View>
-            <Text style={styles.metaLabel}>登録日</Text>
+            <Text style={styles.metaLabel}>{t("detail.registered_at")}</Text>
             <Text style={styles.metaValue}>
-              {formatDate(product.createdAt)}
+              {formatDate(product.createdAt, language)}
             </Text>
           </View>
           <View>
-            <Text style={styles.metaLabel}>更新日</Text>
+            <Text style={styles.metaLabel}>{t("detail.updated_at")}</Text>
             <Text style={styles.metaValue}>
-              {formatDate(product.updatedAt)}
+              {formatDate(product.updatedAt, language)}
             </Text>
           </View>
         </View>
@@ -193,11 +195,11 @@ export default function ProductDetailScreen() {
               pressed && styles.pressed,
             ]}
           >
-            <Text style={styles.editButtonText}>この記録を編集する</Text>
+            <Text style={styles.editButtonText}>{t("detail.edit_record")}</Text>
             <Text style={styles.editGlyph}>✎</Text>
           </Pressable>
           <SecondaryButton
-            label="この商品を削除"
+            label={t("detail.delete_product")}
             danger
             glyph="×"
             onPress={handleDelete}
@@ -208,8 +210,8 @@ export default function ProductDetailScreen() {
   );
 }
 
-function formatDate(value: string): string {
-  return new Intl.DateTimeFormat("ja-JP", {
+function formatDate(value: string, language: "ja" | "en"): string {
+  return new Intl.DateTimeFormat(language === "ja" ? "ja-JP" : "en-US", {
     year: "numeric",
     month: "short",
     day: "numeric",

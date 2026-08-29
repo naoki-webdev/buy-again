@@ -28,7 +28,7 @@ describe("Open Food Facts service", () => {
     };
 
     await expect(
-      lookupOpenFoodFactsProduct(" 3017620422003 ", fetcher),
+      lookupOpenFoodFactsProduct(" 3017620422003 ", "ja", fetcher),
     ).resolves.toEqual({
       productName: "チョコスプレッド",
       brand: "Nutella, Ferrero",
@@ -37,6 +37,7 @@ describe("Open Food Facts service", () => {
     expect(requestedUrl).toContain(
       "/api/v3/product/3017620422003?product_type=food",
     );
+    expect(requestedUrl).toContain("lc=ja");
     expect(requestedUrl).toContain(
       "fields=product_name_ja%2Cproduct_name%2Cproduct_name_en%2Cbrands%2Cimage_front_url%2Cimage_url",
     );
@@ -54,7 +55,7 @@ describe("Open Food Facts service", () => {
     });
 
     await expect(
-      lookupOpenFoodFactsProduct("4900000000001", fetcher),
+      lookupOpenFoodFactsProduct("4900000000001", "ja", fetcher),
     ).resolves.toBeNull();
   });
 
@@ -66,17 +67,18 @@ describe("Open Food Facts service", () => {
     });
 
     await expect(
-      lookupOpenFoodFactsProduct("4900000000001", fetcher),
+      lookupOpenFoodFactsProduct("4900000000001", "ja", fetcher),
     ).resolves.toBeNull();
   });
 
-  it("日本語名を優先し、英語しかない場合は通常名を使う", async () => {
+  it("日本語表示では日本語名を優先する", async () => {
     const fetcher: OpenFoodFactsFetcher = async () => ({
       ok: true,
       status: 200,
       json: async () => ({
         status: "success",
         product: {
+          product_name_ja: "バターチキンカレー",
           product_name: "Butter Chicken",
           product_name_en: "Butter Chicken",
           brands: "Mandala",
@@ -85,12 +87,36 @@ describe("Open Food Facts service", () => {
     });
 
     await expect(
-      lookupOpenFoodFactsProduct("4901002182663", fetcher),
+      lookupOpenFoodFactsProduct("4901002182663", "ja", fetcher),
+    ).resolves.toMatchObject({ productName: "バターチキンカレー" });
+  });
+
+  it("英語表示では英語名を優先し、なければ通常名を使う", async () => {
+    let requestedUrl = "";
+    const fetcher: OpenFoodFactsFetcher = async (url) => {
+      requestedUrl = url;
+      return {
+        ok: true,
+        status: 200,
+        json: async () => ({
+          status: "success",
+          product: {
+            product_name: "Butter Chicken",
+            product_name_en: "Butter Chicken",
+            brands: "Mandala",
+          },
+        }),
+      };
+    };
+
+    await expect(
+      lookupOpenFoodFactsProduct("4901002182663", "en", fetcher),
     ).resolves.toEqual({
       productName: "Butter Chicken",
       brand: "Mandala",
       imageUri: null,
     });
+    expect(requestedUrl).toContain("lc=en");
   });
 
   it("数字以外のバーコードは外部検索しない", async () => {
@@ -101,7 +127,7 @@ describe("Open Food Facts service", () => {
     };
 
     await expect(
-      lookupOpenFoodFactsProduct("ABC-123", fetcher),
+      lookupOpenFoodFactsProduct("ABC-123", "ja", fetcher),
     ).resolves.toBeNull();
     expect(called).toBe(false);
   });

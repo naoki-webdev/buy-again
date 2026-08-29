@@ -18,10 +18,12 @@ import {
 } from "@/components/ui";
 import { Colors, Radius, Spacing } from "@/constants/theme";
 import { filterProducts, RATING_OPTIONS, type Rating } from "@/domain/product";
+import { useTranslation } from "@/i18n";
 import { useProductStore } from "@/store/product-store";
 
 export default function ProductsScreen() {
   const products = useProductStore((state) => state.products);
+  const { t } = useTranslation();
   const [query, setQuery] = useState("");
   const [rating, setRating] = useState<Rating | "all">("all");
   const filtered = filterProducts(products, query, rating);
@@ -30,11 +32,11 @@ export default function ProductsScreen() {
     <SafeAreaView edges={["top"]} style={styles.root}>
       <View style={styles.content}>
         <AppHeader
-          eyebrow={`${products.length} ITEMS`}
-          title="商品一覧"
+          eyebrow={t("products.item_count", { count: products.length })}
+          title={t("products.title")}
           action={
             <IconButton
-              label="商品を登録する"
+              label={t("products.add_label")}
               glyph="＋"
               onPress={() => router.push("/add")}
             />
@@ -45,7 +47,7 @@ export default function ProductsScreen() {
           <TextInput
             value={query}
             onChangeText={setQuery}
-            placeholder="商品名で検索"
+            placeholder={t("products.search_placeholder")}
             placeholderTextColor={Colors.muted}
             style={styles.searchInput}
             returnKeyType="search"
@@ -53,7 +55,7 @@ export default function ProductsScreen() {
           {query ? (
             <Pressable
               onPress={() => setQuery("")}
-              accessibilityLabel="検索をクリア"
+              accessibilityLabel={t("products.clear_search")}
             >
               <Text style={styles.clearText}>×</Text>
             </Pressable>
@@ -66,21 +68,24 @@ export default function ProductsScreen() {
           contentContainerStyle={styles.filterRow}
         >
           <FilterChip
-            label="すべて"
+            label={t("products.all")}
             selected={rating === "all"}
+            showDot={false}
             onPress={() => setRating("all")}
           />
           {RATING_OPTIONS.map((option) => (
             <FilterChip
               key={option.value}
-              label={option.shortLabel}
+              label={t(option.shortLabelKey)}
               selected={rating === option.value}
               color={option.color}
               onPress={() => setRating(option.value)}
             />
           ))}
         </ScrollView>
-        <Text style={styles.resultCount}>{filtered.length}件の記録</Text>
+        <Text style={styles.resultCount}>
+          {t("products.result_count", { count: filtered.length })}
+        </Text>
         <ScrollView
           style={styles.listScroll}
           showsVerticalScrollIndicator={false}
@@ -92,21 +97,23 @@ export default function ProductsScreen() {
             ))
           ) : products.length === 0 ? (
             <EmptyState
-              title="最初の商品を登録しましょう"
-              description="バーコードをスキャンするか、商品名を手入力して記録できます。"
+              title={t("products.empty_title")}
+              description={t("products.empty_description")}
               action={
                 <Pressable
                   style={styles.emptyButton}
                   onPress={() => router.push("/add")}
                 >
-                  <Text style={styles.emptyButtonText}>商品を登録する ＋</Text>
+                  <Text style={styles.emptyButtonText}>
+                    {t("products.add_label")} ＋
+                  </Text>
                 </Pressable>
               }
             />
           ) : (
             <EmptyState
-              title="見つかりませんでした"
-              description="検索語や評価フィルターを変えて試してください。"
+              title={t("products.no_results_title")}
+              description={t("products.no_results_description")}
             />
           )}
         </ScrollView>
@@ -118,11 +125,13 @@ export default function ProductsScreen() {
 function FilterChip({
   label,
   selected,
+  showDot = true,
   color = Colors.forest,
   onPress,
 }: {
   label: string;
   selected: boolean;
+  showDot?: boolean;
   color?: string;
   onPress: () => void;
 }) {
@@ -136,7 +145,7 @@ function FilterChip({
         pressed && styles.pressed,
       ]}
     >
-      {selected && label !== "すべて" ? (
+      {selected && showDot ? (
         <View style={[styles.chipDot, { backgroundColor: Colors.white }]} />
       ) : null}
       <Text style={[styles.filterText, selected && styles.selectedFilterText]}>

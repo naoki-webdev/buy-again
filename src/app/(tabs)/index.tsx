@@ -14,11 +14,13 @@ import {
   StatCard,
 } from "@/components/ui";
 import { Colors, Radius, Spacing } from "@/constants/theme";
+import { useTranslation } from "@/i18n";
 import { useProductStore } from "@/store/product-store";
 
 export default function HomeScreen() {
   const products = useProductStore((state) => state.products);
   const isHydrated = useProductStore((state) => state.isHydrated);
+  const { t } = useTranslation();
 
   if (!isHydrated) {
     return <LoadingState />;
@@ -44,20 +46,23 @@ export default function HomeScreen() {
               <View style={styles.homeHeader}>
                 <LogoMark />
                 <IconButton
-                  label="商品一覧を開く"
+                  label={t("home.list_label")}
                   glyph="☷"
                   onPress={() => router.push("/products")}
+                />
+                <IconButton
+                  label={t("home.settings_label")}
+                  glyph="⚙"
+                  onPress={() => router.push("/settings")}
                 />
               </View>
             }
           />
 
           <View style={styles.intro}>
-            <Text style={styles.kicker}>YOUR TASTE, REMEMBERED</Text>
-            <Text style={styles.title}>もう迷わない、{"\n"}買い物メモ。</Text>
-            <Text style={styles.subtitle}>
-              買ってよかったものも、{"\n"}もう買わないものも、次の買い物へ。
-            </Text>
+            <Text style={styles.kicker}>{t("home.kicker")}</Text>
+            <Text style={styles.title}>{t("home.title")}</Text>
+            <Text style={styles.subtitle}>{t("home.subtitle")}</Text>
           </View>
 
           <Pressable
@@ -69,10 +74,10 @@ export default function HomeScreen() {
             ]}
           >
             <View style={styles.scanCardCopy}>
-              <Text style={styles.scanEyebrow}>QUICK CHECK</Text>
-              <Text style={styles.scanTitle}>バーコードをスキャン</Text>
+              <Text style={styles.scanEyebrow}>{t("home.quick_check")}</Text>
+              <Text style={styles.scanTitle}>{t("home.scan")}</Text>
               <Text style={styles.scanDescription}>
-                登録済みなら、評価とメモをすぐ確認。
+                {t("home.scan_description")}
               </Text>
             </View>
             <View style={styles.scanIcon}>
@@ -82,7 +87,7 @@ export default function HomeScreen() {
 
           <View style={styles.manualAction}>
             <PrimaryButton
-              label="商品を手動登録"
+              label={t("home.manual_add")}
               glyph="＋"
               onPress={() => router.push("/add")}
             />
@@ -91,13 +96,13 @@ export default function HomeScreen() {
           <View style={styles.statsRow}>
             <StatCard
               value={buyAgainCount}
-              label="また買う"
+              label={t("home.buy_again_count")}
               color={Colors.forestSoft}
               glyph="↻"
             />
             <StatCard
               value={neverAgainCount}
-              label="二度と買わない"
+              label={t("home.never_again_count")}
               color={Colors.coralSoft}
               glyph="×"
             />
@@ -105,22 +110,22 @@ export default function HomeScreen() {
 
           <View style={styles.recentSection}>
             <SectionTitle
-              title="最近登録した商品"
+              title={t("home.recent")}
               action={
                 products.length > 0 ? (
                   <Pressable onPress={() => router.push("/products")}>
-                    <Text style={styles.linkText}>すべて見る ›</Text>
+                    <Text style={styles.linkText}>{t("home.view_all")}</Text>
                   </Pressable>
                 ) : null
               }
             />
             {products.length === 0 ? (
               <EmptyState
-                title="まだ商品がありません"
-                description="まずは、最近買ったものをひとつ記録してみましょう。"
+                title={t("home.empty_title")}
+                description={t("home.empty_description")}
                 action={
                   <PrimaryButton
-                    label="最初の商品を登録"
+                    label={t("home.first_add")}
                     glyph="＋"
                     onPress={() => router.push("/add")}
                   />

@@ -3,6 +3,7 @@ import { Text } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 
 import { Colors } from "@/constants/theme";
+import { useTranslation } from "@/i18n";
 
 function TabIcon({ glyph, focused }: { glyph: string; focused: boolean }) {
   return (
@@ -20,6 +21,7 @@ function TabIcon({ glyph, focused }: { glyph: string; focused: boolean }) {
 
 export default function TabsLayout() {
   const insets = useSafeAreaInsets();
+  const { t } = useTranslation();
 
   return (
     <Tabs
@@ -40,14 +42,14 @@ export default function TabsLayout() {
       <Tabs.Screen
         name="index"
         options={{
-          title: "ホーム",
+          title: t("tabs.home"),
           tabBarIcon: ({ focused }) => <TabIcon glyph="⌂" focused={focused} />,
         }}
       />
       <Tabs.Screen
         name="products"
         options={{
-          title: "商品一覧",
+          title: t("tabs.products"),
           tabBarIcon: ({ focused }) => <TabIcon glyph="☷" focused={focused} />,
         }}
       />

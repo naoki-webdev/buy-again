@@ -1,9 +1,27 @@
 import {
+  isOpenFoodFactsImageUri,
   lookupOpenFoodFactsProduct,
   type OpenFoodFactsFetcher,
 } from "@/services/open-food-facts";
 
 describe("Open Food Facts service", () => {
+  it("許可されたOpen Food Facts画像ホストだけを受け付ける", () => {
+    expect(
+      isOpenFoodFactsImageUri(
+        "https://images.openfoodfacts.org/images/products/front.jpg",
+      ),
+    ).toBe(true);
+    expect(
+      isOpenFoodFactsImageUri("https://static.openfoodfacts.org/product.jpg"),
+    ).toBe(true);
+    expect(isOpenFoodFactsImageUri("https://example.com/image.jpg")).toBe(
+      false,
+    );
+    expect(
+      isOpenFoodFactsImageUri("http://images.openfoodfacts.org/a.jpg"),
+    ).toBe(false);
+  });
+
   it("商品名、ブランド、画像を取得する", async () => {
     let requestedUrl = "";
     let requestedInit: RequestInit | undefined;
@@ -72,6 +90,51 @@ describe("Open Food Facts service", () => {
     ).resolves.toBeNull();
   });
 
+  it("サーバーエラーは呼び出し元へ返す", async () => {
+    const fetcher: OpenFoodFactsFetcher = async () => ({
+      ok: false,
+      status: 500,
+      json: async () => ({}),
+    });
+
+    await expect(
+      lookupOpenFoodFactsProduct("4900000000001", "ja", fetcher),
+    ).rejects.toThrow("500");
+  });
+
+  it("不正なJSONは検索エラーとして返す", async () => {
+    const fetcher: OpenFoodFactsFetcher = async () => ({
+      ok: true,
+      status: 200,
+      json: async () => {
+        throw new Error("invalid json");
+      },
+    });
+
+    await expect(
+      lookupOpenFoodFactsProduct("4900000000001", "ja", fetcher),
+    ).rejects.toThrow("invalid json");
+  });
+
+  it("success_with_errorsでも取得できた商品情報を使う", async () => {
+    const fetcher: OpenFoodFactsFetcher = async () => ({
+      ok: true,
+      status: 200,
+      json: async () => ({
+        status: "success_with_errors",
+        product: { product_name_ja: "一部情報の商品" },
+      }),
+    });
+
+    await expect(
+      lookupOpenFoodFactsProduct("4900000000001", "ja", fetcher),
+    ).resolves.toEqual({
+      productName: "一部情報の商品",
+      brand: null,
+      imageUri: null,
+    });
+  });
+
   it("日本語表示では日本語名を優先する", async () => {
     const fetcher: OpenFoodFactsFetcher = async () => ({
       ok: true,
@@ -120,6 +183,21 @@ describe("Open Food Facts service", () => {
     expect(requestedUrl).toContain("lc=en");
   });
 
+  it("商品名を保存上限の120文字に切り詰める", async () => {
+    const fetcher: OpenFoodFactsFetcher = async () => ({
+      ok: true,
+      status: 200,
+      json: async () => ({
+        status: "success",
+        product: { product_name: "あ".repeat(121) },
+      }),
+    });
+
+    await expect(
+      lookupOpenFoodFactsProduct("4900000000001", "en", fetcher),
+    ).resolves.toMatchObject({ productName: "あ".repeat(120) });
+  });
+
   it("呼び出し元のAbortSignalで検索を中断できる", async () => {
     const controller = new AbortController();
     const fetcher: OpenFoodFactsFetcher = async (_url, init) =>
@@ -151,5 +229,27 @@ describe("Open Food Facts service", () => {
       lookupOpenFoodFactsProduct("ABC-123", "ja", fetcher),
     ).resolves.toBeNull();
     expect(called).toBe(false);
+  });
+
+  it("Open Food Facts以外の画像URLは保存候補にしない", async () => {
+    const fetcher: OpenFoodFactsFetcher = async () => ({
+      ok: true,
+      status: 200,
+      json: async () => ({
+        status: "success",
+        product: {
+          product_name: "Test product",
+          image_front_url: "https://example.com/untrusted-image.jpg",
+        },
+      }),
+    });
+
+    await expect(
+      lookupOpenFoodFactsProduct("4901002182663", "en", fetcher),
+    ).resolves.toEqual({
+      productName: "Test product",
+      brand: null,
+      imageUri: null,
+    });
   });
 });

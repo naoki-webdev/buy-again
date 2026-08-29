@@ -38,24 +38,36 @@ export default function ProductDetailScreen() {
   const [lookupError, setLookupError] = useState<string | null>(null);
   const [deleteError, setDeleteError] = useState<string | null>(null);
   const product = storedProduct ?? loadedProduct;
-  const isValidId = typeof id === "string" && !Number.isNaN(Number(id));
+  const parsedId = typeof id === "string" ? Number(id) : Number.NaN;
+  const isValidId = Number.isInteger(parsedId) && parsedId > 0;
   const isLoading = isValidId && product === null && !lookupFinished;
 
   useEffect(() => {
-    const productId = Number(id);
-    if (Number.isNaN(productId) || storedProduct) {
+    if (!isValidId || storedProduct) {
       return;
     }
+    const productId = parsedId;
+    let isActive = true;
     void getById(db, productId)
       .then((loadedProduct) => {
+        if (!isActive) {
+          return;
+        }
         setLoadedProduct(loadedProduct);
         setLookupFinished(true);
       })
       .catch(() => {
+        if (!isActive) {
+          return;
+        }
         setLookupError(t("detail.load_failed"));
         setLookupFinished(true);
       });
-  }, [db, getById, id, storedProduct, t]);
+
+    return () => {
+      isActive = false;
+    };
+  }, [db, getById, isValidId, parsedId, storedProduct, t]);
 
   if (isLoading) {
     return <LoadingState />;

@@ -142,6 +142,8 @@ export const translations = {
       barcode_required: "バーコードを入力してください。",
       product_name_required: "商品名を入力してください。",
       product_name_too_long: "商品名は120文字以内で入力してください。",
+      brand_too_long: "ブランドは100文字以内で入力してください。",
+      note_too_long: "メモは2000文字以内で入力してください。",
       barcode_digits_only: "バーコードは数字で入力してください。",
       lookup_failed: "商品を検索できませんでした。もう一度試してください。",
       product_not_found: "商品が見つかりません。",
@@ -175,6 +177,35 @@ export const translations = {
       current: "現在の設定：{language}",
       product_language_note:
         "バーコード検索時の商品名も、この言語を優先します。",
+      data_title: "データとプライバシー",
+      data_description:
+        "商品記録と写真はこの端末に保存されます。アプリを削除すると記録を失う可能性があります。",
+      privacy_policy: "プライバシーポリシー",
+      privacy_description:
+        "保存する情報と外部サービスへの問い合わせについて確認できます。",
+      attribution_title: "商品情報の提供元",
+      attribution_description:
+        "商品名、ブランド、画像の候補にOpen Food Factsを使用しています。",
+      attribution_link: "Open Food Factsを開く",
+    },
+    privacy: {
+      eyebrow: "PRIVACY",
+      title: "プライバシーとデータ",
+      intro:
+        "buy-againは、買った商品の記録を端末内で管理する個人用アプリです。",
+      local_title: "端末内に保存する情報",
+      local_body:
+        "商品名、ブランド、バーコード、評価、メモ、登録日時、商品写真を端末内に保存します。アカウント登録やクラウド同期はありません。アプリを削除すると、記録と写真を失う可能性があります。",
+      network_title: "Open Food Factsへの問い合わせ",
+      network_body:
+        "未登録の食品バーコードを確認するとき、バーコード番号と表示言語をOpen Food Factsへ送信します。取得した商品名、ブランド、画像は保存前に確認と編集ができます。",
+      permissions_title: "端末の権限",
+      permissions_body:
+        "カメラはバーコード読み取り時に使用します。写真へのアクセスは商品写真の選択時に使用します。どちらも許可しなくても、手入力と写真なしの記録は利用できます。",
+      deletion_title: "削除",
+      deletion_body:
+        "商品詳細画面から商品記録と保存した商品写真を削除できます。Open Food Factsへ送信したバーコードの削除依頼は、同サービスの案内を確認してください。",
+      off_link: "Open Food Factsのサイトを開く",
     },
   },
   en: {
@@ -317,6 +348,8 @@ export const translations = {
       barcode_required: "Enter a barcode.",
       product_name_required: "Enter a product name.",
       product_name_too_long: "Product names must be 120 characters or fewer.",
+      brand_too_long: "Brands must be 100 characters or fewer.",
+      note_too_long: "Notes must be 2,000 characters or fewer.",
       barcode_digits_only: "Barcodes can contain digits only.",
       lookup_failed: "Could not search for the product. Try again.",
       product_not_found: "Product not found.",
@@ -349,6 +382,35 @@ export const translations = {
       current: "Current setting: {language}",
       product_language_note:
         "Barcode lookups also prioritize product names in this language.",
+      data_title: "Data and privacy",
+      data_description:
+        "Product records and photos stay on this device. Uninstalling the app may remove them.",
+      privacy_policy: "Privacy policy",
+      privacy_description:
+        "See what is stored and when an external service is contacted.",
+      attribution_title: "Product information source",
+      attribution_description:
+        "Open Food Facts provides product name, brand, and image suggestions.",
+      attribution_link: "Open Open Food Facts",
+    },
+    privacy: {
+      eyebrow: "PRIVACY",
+      title: "Privacy and data",
+      intro:
+        "buy-again is a personal app for keeping shopping memories on your device.",
+      local_title: "Information stored on this device",
+      local_body:
+        "Product names, brands, barcodes, ratings, notes, dates, and product photos are stored on this device. There is no account or cloud sync. Uninstalling the app may remove your records and photos.",
+      network_title: "Open Food Facts requests",
+      network_body:
+        "When you check an unregistered food barcode, the barcode and display language are sent to Open Food Facts. You can review and edit returned names, brands, and images before saving.",
+      permissions_title: "Device permissions",
+      permissions_body:
+        "The camera is used when scanning barcodes. Photo access is used when choosing a product photo. You can still enter records manually without either permission.",
+      deletion_title: "Deletion",
+      deletion_body:
+        "You can delete a product record and its saved product photo from the product detail screen. For a barcode sent to Open Food Facts, follow that service's guidance.",
+      off_link: "Open the Open Food Facts site",
     },
   },
 } as const;

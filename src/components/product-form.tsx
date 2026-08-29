@@ -24,6 +24,9 @@ import {
 import { Colors, Radius, Spacing } from "@/constants/theme";
 import {
   createEmptyDraft,
+  MAX_BRAND_LENGTH,
+  MAX_NOTE_LENGTH,
+  MAX_PRODUCT_NAME_LENGTH,
   validateProductDraft,
   type Product,
   type ProductDraft,
@@ -41,10 +44,6 @@ type ProductFormProps = {
 type ProductFormParams = {
   id?: string;
   barcode?: string;
-  name?: string;
-  brand?: string;
-  imageUri?: string;
-  source?: string;
   lookup?: string;
 };
 
@@ -62,11 +61,8 @@ export function ProductFormScreen({ mode }: ProductFormProps) {
   const sourceProduct = initialProduct ?? loadedProduct;
   const originalImageUri = sourceProduct?.imageUri ?? null;
   const barcodeParam = getParamString(params.barcode);
-  const nameParam = getParamString(params.name);
-  const brandParam = getParamString(params.brand);
-  const imageUriParam = getParamString(params.imageUri);
-  const hasInitialAutoFill =
-    mode === "create" && getParamString(params.source) === "open-food-facts";
+  const isValidProductId =
+    productId !== null && Number.isInteger(productId) && productId > 0;
   const shouldLookupExternal =
     mode === "create" &&
     getParamString(params.lookup) === "open-food-facts" &&
@@ -84,20 +80,21 @@ export function ProductFormScreen({ mode }: ProductFormProps) {
         }
       : {
           ...createEmptyDraft(barcodeParam),
-          name: nameParam,
-          brand: brandParam,
-          imageUri: imageUriParam || null,
         },
   );
   const [isLoading, setIsLoading] = useState(
-    mode === "edit" && !initialProduct,
+    mode === "edit" && !initialProduct && isValidProductId,
   );
   const [isSaving, setIsSaving] = useState(false);
-  const [error, setError] = useState<string | null>(null);
+  const [error, setError] = useState<string | null>(() =>
+    mode === "edit" && !initialProduct && !isValidProductId
+      ? t("errors.product_not_found")
+      : null,
+  );
   const [photoPermissionBlocked, setPhotoPermissionBlocked] = useState(false);
   const [isExternalLookupFinished, setIsExternalLookupFinished] =
     useState(!shouldLookupExternal);
-  const [hasAutoFilled, setHasAutoFilled] = useState(hasInitialAutoFill);
+  const [hasAutoFilled, setHasAutoFilled] = useState(false);
   const saveInProgress = useRef(false);
   const isLookingUpExternal = shouldLookupExternal && !isExternalLookupFinished;
 
@@ -106,12 +103,16 @@ export function ProductFormScreen({ mode }: ProductFormProps) {
       return;
     }
 
-    if (productId === null || Number.isNaN(productId)) {
+    if (!isValidProductId) {
       return;
     }
 
+    let isActive = true;
     void getById(db, productId)
       .then((existingProduct) => {
+        if (!isActive) {
+          return;
+        }
         if (existingProduct) {
           setLoadedProduct(existingProduct);
           setDraft({
@@ -128,10 +129,17 @@ export function ProductFormScreen({ mode }: ProductFormProps) {
         setIsLoading(false);
       })
       .catch(() => {
+        if (!isActive) {
+          return;
+        }
         setError(t("errors.product_load_failed"));
         setIsLoading(false);
       });
-  }, [db, getById, initialProduct, mode, productId, t]);
+
+    return () => {
+      isActive = false;
+    };
+  }, [db, getById, initialProduct, isValidProductId, mode, productId, t]);
 
   useEffect(() => {
     if (!shouldLookupExternal) {
@@ -217,7 +225,7 @@ export function ProductFormScreen({ mode }: ProductFormProps) {
       setError(t(`errors.${validationError}`));
       return;
     }
-    if (mode === "edit" && productId === null) {
+    if (mode === "edit" && !isValidProductId) {
       setError(t("errors.product_not_found"));
       return;
     }
@@ -373,6 +381,7 @@ export function ProductFormScreen({ mode }: ProductFormProps) {
               placeholder={t("form.product_name_placeholder")}
               value={draft.name}
               onChangeText={(name) => updateDraft({ name })}
+              maxLength={MAX_PRODUCT_NAME_LENGTH}
               autoFocus={
                 mode === "create" && !hasAutoFilled && !isLookingUpExternal
               }
@@ -391,6 +400,7 @@ export function ProductFormScreen({ mode }: ProductFormProps) {
               placeholder={t("form.brand_placeholder")}
               value={draft.brand}
               onChangeText={(brand) => updateDraft({ brand })}
+              maxLength={MAX_BRAND_LENGTH}
             />
             <View style={styles.ratingSection}>
               <Text style={styles.fieldLabel}>{t("form.rating")}</Text>
@@ -405,6 +415,7 @@ export function ProductFormScreen({ mode }: ProductFormProps) {
               placeholder={t("form.note_placeholder")}
               value={draft.note}
               onChangeText={(note) => updateDraft({ note })}
+              maxLength={MAX_NOTE_LENGTH}
               multiline
             />
           </View>

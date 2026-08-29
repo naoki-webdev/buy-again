@@ -12,6 +12,7 @@ import {
 import { AppState } from "react-native";
 
 import { translations } from "@/locales/generated";
+import { ProductError } from "@/domain/errors";
 
 export type AppLanguage = "ja" | "en";
 export type LanguagePreference = "system" | AppLanguage;
@@ -29,8 +30,19 @@ type I18nContextValue = {
   t: Translate;
 };
 
-const LANGUAGE_PREFERENCE_KEY = "buy-again.language-preference";
+export const LANGUAGE_PREFERENCE_KEY = "buy-again.language-preference";
 const I18nContext = createContext<I18nContextValue | null>(null);
+
+export async function loadLanguagePreference(): Promise<LanguagePreference> {
+  const storedPreference = await AsyncStorage.getItem(LANGUAGE_PREFERENCE_KEY);
+  return isLanguagePreference(storedPreference) ? storedPreference : "system";
+}
+
+export async function saveLanguagePreference(
+  preference: LanguagePreference,
+): Promise<void> {
+  await AsyncStorage.setItem(LANGUAGE_PREFERENCE_KEY, preference);
+}
 
 export function I18nProvider({ children }: PropsWithChildren) {
   const [preference, setPreferenceState] =
@@ -41,7 +53,7 @@ export function I18nProvider({ children }: PropsWithChildren) {
 
   useEffect(() => {
     let isMounted = true;
-    void AsyncStorage.getItem(LANGUAGE_PREFERENCE_KEY)
+    void loadLanguagePreference()
       .then((storedPreference) => {
         if (isMounted && isLanguagePreference(storedPreference)) {
           setPreferenceState(storedPreference);
@@ -77,7 +89,7 @@ export function I18nProvider({ children }: PropsWithChildren) {
     async (nextPreference: LanguagePreference) => {
       setPreferenceState(nextPreference);
       try {
-        await AsyncStorage.setItem(LANGUAGE_PREFERENCE_KEY, nextPreference);
+        await saveLanguagePreference(nextPreference);
       } catch {
         // The in-memory setting still applies if persistent storage is unavailable.
       }
@@ -119,6 +131,10 @@ export function getLocalizedErrorMessage(
 ): string {
   if (!(error instanceof Error)) {
     return t(fallbackKey);
+  }
+
+  if (error instanceof ProductError) {
+    return t(`errors.${error.code}`);
   }
 
   if (error.message.includes("すでに登録されています")) {
@@ -175,7 +191,7 @@ function interpolate(template: string, values: TranslationValues): string {
   });
 }
 
-function isLanguagePreference(
+export function isLanguagePreference(
   value: string | null,
 ): value is LanguagePreference {
   return value === "system" || value === "ja" || value === "en";

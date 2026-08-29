@@ -37,7 +37,7 @@ export const useProductStore = create<ProductStore>((set) => ({
   isLoading: false,
   error: null,
   hydrate: async (db) => {
-    set({ isLoading: true, error: null });
+    set({ isLoading: true, isHydrated: false, error: null });
     try {
       const products = await listProducts(db);
       set({ products, isHydrated: true, isLoading: false });

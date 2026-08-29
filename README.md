@@ -56,9 +56,22 @@ Open Food Factsの画像を端末へ保存できない場合は、写真なし�
 システム設定に従う場合は、アプリを再表示したときの端末言語を反映します。
 表示言語と同じ言語をOpen Food Factsの検索候補にも指定します。
 
+## プライバシーとデータの扱い
+
+商品記録と写真は端末内に保存します。
+
+アプリの削除や端末故障、機種変更によって記録を失う可能性があるため、現行MVPにはバックアップやエクスポート機能がないことを明示しています。
+
+未登録の食品バーコードを確認するときは、バーコード番号と表示言語をOpen Food Factsへ送信します。
+
+アプリ内の設定画面から、保存する情報、端末権限、Open Food Factsの利用方法を確認できます。
+
+詳細は[PRIVACY.md](PRIVACY.md)に記載しています。
+
 ## 品質確認で反映した内容
 
 - 商品登録、編集、削除、バーコード検索、評価フィルタを独立したテストで確認しています。
+- ドメインでは商品名、ブランド、メモ、バーコードの入力境界を確認しています。
 - 同じバーコードの商品は新規登録できません。
 - 編集時に別の商品と同じバーコードへ変更する操作も拒否します。
 - SQLiteにもバーコードのUNIQUEインデックスを設定し、重複をデータベース側でも拒否します。
@@ -72,9 +85,29 @@ Open Food Factsの画像を端末へ保存できない場合は、写真なし�
 - 商品一覧では商品名、ブランド、バーコードを検索できます。
 - 日本語と英語の翻訳キーが一致することをlocale生成時に検証し、CIでも生成ファイルとの差分を確認します。
 - create-expo-app由来で未使用だった依存関係と画像アセットを整理しています。
+- Repositoryのエラーは安定したエラーコードでUIへ渡し、表示言語ごとに翻訳します。
+- 登録画面へ渡すURLパラメータはバーコードと外部検索フラグだけに限定し、任意の画像URLを受け付けません。
+- Open Food Facts画像は許可ホスト、画像形式、5MB上限を確認してから保存します。
+- 画像の端末内コピー、管理対象画像の再コピー抑止、削除、コピー失敗時のcleanupをテストしています。
+- 設定画面にPrivacy画面とOpen Food Factsの帰属表示を用意しています。
+- アプリのアイコン、Splash、Android adaptive icon、monochrome icon、faviconを専用素材へ置き換えています。
 - SQLiteの初期化または読み込みに失敗した場合は、再試行できるエラー画面を表示します。
 - ホーム画面は商品0件時と小さい画面で縦にスクロールできます。
 - ホーム、商品一覧、詳細、登録、編集、スキャン画面でSafe Areaを考慮しています。
+
+## Release Candidateの判定
+
+単体テストは、ドメイン、Repository、migration、Open Food Facts、表示言語のロジックを対象にしています。
+
+現在は7スイート、41テストケースです。
+
+内訳は、Repository 8件、Open Food Facts 13件、ドメイン 5件、i18n 7件、migration 1件、Store 2件、画像保存 5件です。
+
+自動E2Eテストは導入していません。
+
+公開候補版では機能追加を停止し、Android Development BuildとiPhone実機でREADMEのチェックリストを完了させます。
+
+実機QA中は不具合修正だけを行い、修正箇所と影響範囲を再テストしてからストア提出版を固定します。
 
 ## 技術構成
 
@@ -101,6 +134,8 @@ Open Food Factsの画像を端末へ保存できない場合は、写真なし�
 
 - iOS Bundle ID：`com.naokiwebdev.buyagain`
 - Android package：`com.naokiwebdev.buyagain`
+
+アイコンとSplashは、アプリ名と買い物の記録を表す専用マークを使用しています。
 
 ストアへ初回登録する前であれば、所有するドメインや組織名に合わせて変更できます。
 
@@ -248,6 +283,10 @@ Development Buildでは、v1相当の`buy-again.db`（同じバーコードを2�
 
 - [ ] Expo Goで起動し、ホーム画面が表示される。
 - [ ] Android Development Buildで起動し、アプリ固有の権限文言が表示される。
+- [ ] 設定画面からPrivacy画面を開き、端末保存とOpen Food Factsへの送信内容を確認できる。
+- [ ] Privacy画面と設定画面からOpen Food Factsの公式サイトを開ける。
+- [ ] スプラッシュ、ホーム画面アイコン、Android adaptive iconがExpo初期素材ではない。
+- [ ] Open Food Factsの帰属表示と公式サイトへのリンクが表示される。
 - [ ] 商品を登録し、アプリを終了して再起動しても商品が残っている。
 - [ ] 商品を編集し、変更後に一覧と詳細へ反映される。
 - [ ] 商品を削除し、一覧から消える。
@@ -265,6 +304,8 @@ Development Buildでは、v1相当の`buy-again.db`（同じバーコードを2�
 - [ ] 長い商品名と長いメモが画面からはみ出さず、スクロールして確認できる。
 - [ ] キーボード表示中に商品名とメモを入力でき、保存ボタンまで移動できる。
 - [ ] ノッチ、ステータスバー、ナビゲーションバー、ホームインジケータと画面要素が重ならない。
+- [ ] 端末の文字サイズを大きくしても、ボタン、評価選択、設定画面が読めて操作できる。
+- [ ] TalkBackまたはVoiceOverで主要ボタンと評価選択の名称を読み上げられる。
 - [ ] 端末の空き容量が少ない状態などでSQLiteエラーが起きた場合、再試行画面が表示される。
 
 ### iPhone
@@ -277,7 +318,10 @@ Development Buildでは、v1相当の`buy-again.db`（同じバーコードを2�
 - [ ] 写真アクセス権限を拒否した場合に登録操作を続けられる。
 - [ ] 写真を登録し、アプリ再起動後も表示される。
 - [ ] キーボード、Safe Area、長い商品名、長いメモを確認する。
+- [ ] Privacy画面、帰属表示、端末保存の注意書きを確認する。
+- [ ] ホーム画面アイコンとSplashが専用素材で表示される。
 - [ ] iOSのDevelopment Buildを確認する場合は、EAS Buildで作成した実機用ビルドを使用する。
+- [ ] iOS Development BuildでPrivacy画面、帰属表示、専用アイコン、Splashを確認する。
 
 ### 表示言語
 
@@ -338,11 +382,17 @@ npx expo-doctor
 | Android戻るボタン        | Expo Routerのスタックとモーダルの標準戻る動作を利用します。                                                                                                      |
 | キーボード表示           | 登録と編集を`KeyboardAvoidingView`と`ScrollView`で構成します。                                                                                                   |
 | Safe Area                | 各画面、タブバー、スキャン画面で上下のインセットを反映します。                                                                                                   |
-| 長い商品名とメモ         | 商品名は120文字で検証し、一覧では省略表示、詳細とフォームではスクロール表示します。                                                                              |
+| 長い商品名とメモ         | 商品名は120文字、ブランドは100文字、メモは2000文字で検証し、一覧では省略表示、詳細とフォームではスクロール表示します。                                           |
 | 商品0件時                | ホームと商品一覧に空状態と登録導線があります。                                                                                                                   |
 | SQLiteエラー             | 初期化と初回読み込みの失敗は再試行画面にし、操作中の失敗は各画面で表示します。                                                                                   |
 | Open Food Factsの待機    | 未登録バーコードは登録画面へ先に遷移し、外部検索の結果を候補として後から反映します。                                                                             |
 | 外部画像の保存失敗       | Open Food Facts画像を保存できない場合は、画像なしで商品情報を保存します。                                                                                        |
+| 外部画像の安全性         | Open Food Factsの許可ホスト、画像形式、5MB上限を確認し、登録画面のURLパラメータから画像を受け取りません。                                                        |
+| 不正な編集ID             | 整数でない、または0以下のIDは読み込みを終了し、商品未検出として表示します。                                                                                      |
+| DBエラー時の画面         | DB読み込み失敗時はNavigation Treeを表示せず、再試行画面だけを表示します。                                                                                        |
+| エラーコード             | Repositoryは日本語メッセージの比較ではなく、`ProductError`のコードを使って表示文言を選びます。                                                                   |
+| Privacyと帰属表示        | 設定画面とPrivacy画面で端末保存の範囲、外部送信、Open Food Factsへのリンクを説明します。                                                                         |
+| アプリ素材               | アイコン、Splash、Android adaptive icon、monochrome icon、faviconは専用素材を使用します。                                                                        |
 | 表示言語                 | 端末言語を初期値とし、設定画面の手動選択をAsyncStorageへ保存します。                                                                                             |
 
 上表はソースコードとWebバンドルによる静的確認の結果です。
@@ -362,6 +412,7 @@ src/
     add.tsx             商品登録画面
     scan.tsx            バーコードスキャン画面
     settings.tsx        表示言語の設定画面
+    privacy.tsx         プライバシーとデータの説明
     product/[id].tsx    商品詳細画面
     product/edit/[id].tsx
                         商品編集画面
@@ -377,7 +428,9 @@ src/
                         商品データの読み書き
     product-repository.test.ts
                         商品操作とフィルタの独立テスト
+    database.test.ts    migrationの独立テスト
   domain/
+    errors.ts           RepositoryとUIで共有するエラーコード
     product.ts          商品型、評価、入力検証、フィルタ
   i18n/
     index.tsx           端末言語、手動設定、翻訳参照
@@ -387,17 +440,26 @@ src/
     generated.ts        YAMLから生成した翻訳データ
   store/
     product-store.ts    Zustandの状態管理
+    product-store.test.ts
+                        hydrateとCRUD後の状態テスト
   services/
     image-storage.native.ts
                         写真を端末内の永続領域へ保存
+    image-storage.native.test.ts
+                        コピー、削除、失敗時cleanupのテスト
     open-food-facts.ts
                         食品バーコードから商品情報を取得
+PRIVACY.md              ストア公開前に提供するプライバシーポリシー
 locales/
   ja.json               iOSシステム文言の日本語
   en.json               iOSシステム文言の英語
 scripts/
+  generate-brand-assets.mjs
+                        専用アイコンとSplash素材の生成
   generate-locales.mjs  翻訳YAMLの検証とTypeScript生成
 ```
+
+ルートの[PRIVACY.md](PRIVACY.md)は、ストア公開前に公開HTTPS URLで提供してください。
 
 ## 設計意図
 
@@ -421,4 +483,5 @@ Webは画面確認用としてlocalStorageのフォールバックを使うた�
 - iCloudやGoogle Driveなどを使った端末間同期
 - エクスポートとインポート
 - 写真ファイルの孤児検出と整理
+- Privacy Policyの公開HTTPS URL設定とストアへの登録
 - 実機でのカメラ読み取り確認と端末別の表示調整

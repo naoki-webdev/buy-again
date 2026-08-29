@@ -5,6 +5,10 @@ const OPEN_FOOD_FACTS_API_URL =
 const APP_VERSION = Constants.expoConfig?.version ?? "1.0.0";
 const OPEN_FOOD_FACTS_USER_AGENT = `buy-again/${APP_VERSION} (https://github.com/naoki-webdev/buy-again)`;
 const REQUEST_TIMEOUT_MS = 7000;
+const OPEN_FOOD_FACTS_IMAGE_HOSTS = new Set([
+  "images.openfoodfacts.org",
+  "static.openfoodfacts.org",
+]);
 
 type OpenFoodFactsProductResponse = {
   product_name_ja?: unknown;
@@ -87,6 +91,18 @@ export async function lookupOpenFoodFactsProduct(
   }
 }
 
+export function isOpenFoodFactsImageUri(uri: string): boolean {
+  try {
+    const parsed = new URL(uri);
+    return (
+      parsed.protocol === "https:" &&
+      OPEN_FOOD_FACTS_IMAGE_HOSTS.has(parsed.hostname.toLowerCase())
+    );
+  } catch {
+    return false;
+  }
+}
+
 function parseProductResponse(
   payload: unknown,
   language: ProductLookupLanguage,
@@ -109,9 +125,9 @@ function parseProductResponse(
 
   const productName = selectProductName(product, language);
   const brand = normalizeText(product.brands);
-  const imageUri = normalizeImageUri(
-    product.image_front_url ?? product.image_url,
-  );
+  const imageUri =
+    normalizeImageUri(product.image_front_url) ??
+    normalizeImageUri(product.image_url);
   if (!productName && !brand && !imageUri) {
     return null;
   }
@@ -144,7 +160,7 @@ function normalizeText(value: unknown): string | null {
 
 function normalizeImageUri(value: unknown): string | null {
   const imageUri = normalizeText(value);
-  return imageUri?.startsWith("https://") ? imageUri : null;
+  return imageUri && isOpenFoodFactsImageUri(imageUri) ? imageUri : null;
 }
 
 function isRecord(value: unknown): value is Record<string, unknown> {

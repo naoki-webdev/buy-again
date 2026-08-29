@@ -48,6 +48,7 @@
     "test": "jest --runInBand",
     "pretest": "npm run generate-locales",
     "generate-locales": "node ./scripts/generate-locales.mjs",
+    "generate-brand-assets": "node ./scripts/generate-brand-assets.mjs",
     "format": "prettier --write ."
   },
   "private": true

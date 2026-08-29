@@ -22,7 +22,15 @@ export type ProductDraft = {
 };
 
 export type ProductValidationError =
-  "product_name_required" | "product_name_too_long" | "barcode_digits_only";
+  | "product_name_required"
+  | "product_name_too_long"
+  | "brand_too_long"
+  | "note_too_long"
+  | "barcode_digits_only";
+
+export const MAX_PRODUCT_NAME_LENGTH = 120;
+export const MAX_BRAND_LENGTH = 100;
+export const MAX_NOTE_LENGTH = 2000;
 
 export type RatingOption = {
   value: Rating;
@@ -76,8 +84,14 @@ export function validateProductDraft(
   if (draft.name.trim().length === 0) {
     return "product_name_required";
   }
-  if (draft.name.trim().length > 120) {
+  if (draft.name.trim().length > MAX_PRODUCT_NAME_LENGTH) {
     return "product_name_too_long";
+  }
+  if (draft.brand.trim().length > MAX_BRAND_LENGTH) {
+    return "brand_too_long";
+  }
+  if (draft.note.trim().length > MAX_NOTE_LENGTH) {
+    return "note_too_long";
   }
   const barcodeError = validateBarcode(draft.barcode);
   if (barcodeError) {

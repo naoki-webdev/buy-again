@@ -1,5 +1,6 @@
 import type { SQLiteBindValue, SQLiteRunResult } from "expo-sqlite";
 
+import { ProductError } from "@/domain/errors";
 import type { Product, ProductDraft } from "@/domain/product";
 
 export type ProductDatabase = {
@@ -102,7 +103,7 @@ export async function createProduct(
   }
   const product = await getProductById(db, result.lastInsertRowId);
   if (!product) {
-    throw new Error("商品を登録できませんでした。");
+    throw new ProductError("register_failed", "商品を登録できませんでした。");
   }
   return product;
 }
@@ -134,7 +135,7 @@ export async function updateProduct(
   }
   const product = await getProductById(db, id);
   if (!product) {
-    throw new Error("商品が見つかりません。");
+    throw new ProductError("product_not_found", "商品が見つかりません。");
   }
   return product;
 }
@@ -157,7 +158,8 @@ async function ensureBarcodeIsAvailable(
 
   const existing = await findProductByBarcode(db, barcode);
   if (existing && existing.id !== exceptId) {
-    throw new Error(
+    throw new ProductError(
+      "duplicate_barcode",
       "このバーコードの商品はすでに登録されています。既存の記録を編集してください。",
     );
   }
@@ -168,7 +170,8 @@ function normalizeWriteError(error: unknown): Error | unknown {
     error instanceof Error &&
     /unique constraint failed: products\.barcode/i.test(error.message)
   ) {
-    return new Error(
+    return new ProductError(
+      "duplicate_barcode",
       "このバーコードの商品はすでに登録されています。既存の記録を編集してください。",
     );
   }

@@ -189,7 +189,7 @@ describe("product repository", () => {
 
     await expect(
       createProduct(db, { ...draft, name: "重複した商品" }),
-    ).rejects.toThrow("すでに登録されています");
+    ).rejects.toMatchObject({ code: "duplicate_barcode" });
   });
 
   it("編集時も他の商品と同じバーコードを登録できない", async () => {
@@ -202,8 +202,11 @@ describe("product repository", () => {
     });
 
     await expect(
-      updateProduct(db, secondProduct.id, { ...draft, name: "更新後の商品" }),
-    ).rejects.toThrow("すでに登録されています");
+      updateProduct(db, secondProduct.id, {
+        ...draft,
+        name: "更新後の商品",
+      }),
+    ).rejects.toMatchObject({ code: "duplicate_barcode" });
   });
 });
 

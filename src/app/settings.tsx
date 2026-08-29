@@ -1,7 +1,12 @@
 import { router } from "expo-router";
-import { Pressable, StyleSheet, Text, View } from "react-native";
+import { Linking, Pressable, StyleSheet, Text, View } from "react-native";
 
-import { AppHeader, IconButton, Screen } from "@/components/ui";
+import {
+  AppHeader,
+  IconButton,
+  Screen,
+  SecondaryButton,
+} from "@/components/ui";
 import { Colors, Radius, Spacing } from "@/constants/theme";
 import { type LanguagePreference, useTranslation } from "@/i18n";
 
@@ -65,6 +70,45 @@ export default function SettingsScreen() {
           })}
         </View>
         <Text style={styles.note}>{t("settings.product_language_note")}</Text>
+      </View>
+
+      <View style={styles.section}>
+        <Text style={styles.sectionTitle}>{t("settings.data_title")}</Text>
+        <Text style={styles.sectionDescription}>
+          {t("settings.data_description")}
+        </Text>
+        <Pressable
+          accessibilityRole="button"
+          onPress={() => router.push("/privacy")}
+          style={({ pressed }) => [styles.infoCard, pressed && styles.pressed]}
+        >
+          <View style={styles.optionCopy}>
+            <Text style={styles.optionLabel}>
+              {t("settings.privacy_policy")}
+            </Text>
+            <Text style={styles.optionDescription}>
+              {t("settings.privacy_description")}
+            </Text>
+          </View>
+          <Text style={styles.chevron}>›</Text>
+        </Pressable>
+        <View style={styles.attributionCard}>
+          <Text style={styles.optionLabel}>
+            {t("settings.attribution_title")}
+          </Text>
+          <Text style={styles.optionDescription}>
+            {t("settings.attribution_description")}
+          </Text>
+          <SecondaryButton
+            label={t("settings.attribution_link")}
+            glyph="↗"
+            onPress={() =>
+              void Linking.openURL("https://world.openfoodfacts.org/").catch(
+                () => undefined,
+              )
+            }
+          />
+        </View>
       </View>
     </Screen>
   );
@@ -135,5 +179,26 @@ const styles = StyleSheet.create({
     backgroundColor: Colors.forest,
   },
   note: { color: Colors.muted, fontSize: 12, lineHeight: 18, marginTop: 4 },
+  infoCard: {
+    minHeight: 78,
+    borderRadius: Radius.md,
+    borderWidth: 1,
+    borderColor: Colors.border,
+    backgroundColor: Colors.surface,
+    paddingHorizontal: Spacing.lg,
+    paddingVertical: 14,
+    flexDirection: "row",
+    alignItems: "center",
+    gap: Spacing.md,
+  },
+  attributionCard: {
+    borderRadius: Radius.md,
+    borderWidth: 1,
+    borderColor: Colors.border,
+    backgroundColor: Colors.surface,
+    padding: Spacing.lg,
+    gap: 8,
+  },
+  chevron: { color: Colors.muted, fontSize: 26, fontWeight: "300" },
   pressed: { opacity: 0.72 },
 });

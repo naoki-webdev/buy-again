@@ -1,5 +1,11 @@
 import Constants from "expo-constants";
 
+import {
+  MAX_BRAND_LENGTH,
+  MAX_PRODUCT_NAME_LENGTH,
+  type ProductDraft,
+} from "@/domain/product";
+
 const OPEN_FOOD_FACTS_API_URL =
   "https://world.openfoodfacts.org/api/v3/product";
 const APP_VERSION = Constants.expoConfig?.version ?? "1.0.0";
@@ -35,6 +41,29 @@ export type OpenFoodFactsProduct = {
   brand: string | null;
   imageUri: string | null;
 };
+
+export function mergeOpenFoodFactsSuggestion(
+  draft: ProductDraft,
+  requestedBarcode: string,
+  product: OpenFoodFactsProduct,
+): ProductDraft {
+  if (draft.barcode.trim() !== requestedBarcode.trim()) {
+    return draft;
+  }
+
+  return {
+    ...draft,
+    ...(draft.name.trim().length === 0 && product.productName
+      ? { name: product.productName }
+      : {}),
+    ...(draft.brand.trim().length === 0 && product.brand
+      ? { brand: product.brand }
+      : {}),
+    ...(draft.imageUri === null && product.imageUri
+      ? { imageUri: product.imageUri }
+      : {}),
+  };
+}
 
 export type ProductLookupLanguage = "ja" | "en";
 
@@ -124,7 +153,7 @@ function parseProductResponse(
   }
 
   const productName = selectProductName(product, language);
-  const brand = normalizeText(product.brands);
+  const brand = truncateText(normalizeText(product.brands), MAX_BRAND_LENGTH);
   const imageUri =
     normalizeImageUri(product.image_front_url) ??
     normalizeImageUri(product.image_url);
@@ -149,13 +178,20 @@ function selectProductName(
         ];
 
   const productName = candidates.map(normalizeText).find(Boolean) ?? null;
-  return productName ? productName.slice(0, 120).trim() : null;
+  return truncateText(productName, MAX_PRODUCT_NAME_LENGTH);
 }
 
 function normalizeText(value: unknown): string | null {
   return typeof value === "string" && value.trim().length > 0
     ? value.trim()
     : null;
+}
+
+function truncateText(value: string | null, maxLength: number): string | null {
+  if (!value) {
+    return null;
+  }
+  return value.slice(0, maxLength).trim() || null;
 }
 
 function normalizeImageUri(value: unknown): string | null {

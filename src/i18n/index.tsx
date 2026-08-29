@@ -12,12 +12,17 @@ import {
 import { AppState } from "react-native";
 
 import { translations } from "@/locales/generated";
+import type { TranslationKey } from "@/locales/types";
 import { ProductError } from "@/domain/errors";
 
 export type AppLanguage = "ja" | "en";
 export type LanguagePreference = "system" | AppLanguage;
 export type TranslationValues = Record<string, string | number>;
-export type Translate = (key: string, values?: TranslationValues) => string;
+export type { TranslationKey } from "@/locales/types";
+export type Translate = (
+  key: TranslationKey,
+  values?: TranslationValues,
+) => string;
 
 type TranslationNode = {
   [key: string]: string | TranslationNode;
@@ -87,14 +92,16 @@ export function I18nProvider({ children }: PropsWithChildren) {
   );
   const setPreference = useCallback(
     async (nextPreference: LanguagePreference) => {
+      const previousPreference = preference;
       setPreferenceState(nextPreference);
       try {
         await saveLanguagePreference(nextPreference);
       } catch {
-        // The in-memory setting still applies if persistent storage is unavailable.
+        setPreferenceState(previousPreference);
+        throw new Error("言語設定を保存できませんでした。");
       }
     },
-    [],
+    [preference],
   );
   const contextValue = useMemo(
     () => ({ language, preference, setPreference, t }),
@@ -127,7 +134,7 @@ export function detectSystemLanguage(
 export function getLocalizedErrorMessage(
   error: unknown,
   t: Translate,
-  fallbackKey: string,
+  fallbackKey: TranslationKey,
 ): string {
   if (!(error instanceof Error)) {
     return t(fallbackKey);
@@ -155,7 +162,7 @@ function getDeviceLanguage(): AppLanguage {
 
 function translate(
   language: AppLanguage,
-  key: string,
+  key: TranslationKey,
   values?: TranslationValues,
 ): string {
   const selected = translations[language] as unknown as TranslationNode;
@@ -169,7 +176,7 @@ function translate(
 
 function resolveTranslation(
   source: TranslationNode,
-  key: string,
+  key: TranslationKey,
 ): string | undefined {
   let current: string | TranslationNode = source;
   for (const segment of key.split(".")) {

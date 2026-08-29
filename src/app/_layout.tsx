@@ -5,6 +5,7 @@ import { useEffect, type PropsWithChildren } from "react";
 
 import { DatabaseErrorState } from "@/components/ui";
 import { I18nProvider } from "@/i18n";
+import { PurchaseProvider } from "@/services/purchase-service";
 import {
   DatabaseProvider,
   useProductDatabase,
@@ -46,21 +47,25 @@ export default function RootLayout() {
       <ThemeProvider value={DefaultTheme}>
         <DatabaseProvider>
           <AppDataLoader>
-            <StatusBar style="dark" />
-            <Stack
-              screenOptions={{
-                headerShown: false,
-                contentStyle: { backgroundColor: "#F7F5EF" },
-              }}
-            >
-              <Stack.Screen name="(tabs)" />
-              <Stack.Screen name="scan" options={{ presentation: "modal" }} />
-              <Stack.Screen name="add" />
-              <Stack.Screen name="settings" />
-              <Stack.Screen name="privacy" />
-              <Stack.Screen name="product/[id]" />
-              <Stack.Screen name="product/edit/[id]" />
-            </Stack>
+            <PurchaseProvider>
+              <StatusBar style="dark" />
+              <Stack
+                screenOptions={{
+                  headerShown: false,
+                  contentStyle: { backgroundColor: "#F7F5EF" },
+                }}
+              >
+                <Stack.Screen name="(tabs)" />
+                <Stack.Screen name="scan" options={{ presentation: "modal" }} />
+                <Stack.Screen name="add" />
+                <Stack.Screen name="settings" />
+                <Stack.Screen name="privacy" />
+                <Stack.Screen name="terms" />
+                <Stack.Screen name="accessibility" />
+                <Stack.Screen name="product/[id]" />
+                <Stack.Screen name="product/edit/[id]" />
+              </Stack>
+            </PurchaseProvider>
           </AppDataLoader>
         </DatabaseProvider>
       </ThemeProvider>

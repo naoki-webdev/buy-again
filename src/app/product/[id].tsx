@@ -1,14 +1,7 @@
 import { Image } from "expo-image";
 import { router, useLocalSearchParams } from "expo-router";
 import { useEffect, useState } from "react";
-import {
-  Alert,
-  Pressable,
-  ScrollView,
-  StyleSheet,
-  Text,
-  View,
-} from "react-native";
+import { Alert, ScrollView, StyleSheet, Text, View } from "react-native";
 
 import {
   ErrorText,
@@ -32,6 +25,7 @@ export default function ProductDetailScreen() {
   const products = useProductStore((state) => state.products);
   const getById = useProductStore((state) => state.getById);
   const remove = useProductStore((state) => state.remove);
+  const showFlash = useProductStore((state) => state.showFlash);
   const storedProduct = products.find((item) => item.id === Number(id)) ?? null;
   const [loadedProduct, setLoadedProduct] = useState<Product | null>(null);
   const [lookupFinished, setLookupFinished] = useState(false);
@@ -102,7 +96,13 @@ export default function ProductDetailScreen() {
         onPress: () =>
           void remove(db, product.id)
             .then(() => deleteImageUri(product.imageUri).catch(() => undefined))
-            .then(() => router.replace("/products"))
+            .then(() => {
+              showFlash({
+                type: "success",
+                message: t("messages.product_deleted"),
+              });
+              router.replace("/products");
+            })
             .catch(() => setDeleteError(t("detail.delete_failed"))),
       },
     ]);
@@ -170,9 +170,6 @@ export default function ProductDetailScreen() {
                 ? t("detail.avoid_next")
                 : t("detail.current_rating")}
           </Text>
-          <Text style={[styles.outcomeText, { color: option.color }]}>
-            {t(option.labelKey)}
-          </Text>
           <RatingBadge rating={product.rating} large />
         </View>
 
@@ -190,26 +187,18 @@ export default function ProductDetailScreen() {
               {formatDate(product.createdAt, language)}
             </Text>
           </View>
-          <View>
-            <Text style={styles.metaLabel}>{t("detail.updated_at")}</Text>
-            <Text style={styles.metaValue}>
-              {formatDate(product.updatedAt, language)}
-            </Text>
-          </View>
+          {product.updatedAt !== product.createdAt ? (
+            <View>
+              <Text style={styles.metaLabel}>{t("detail.updated_at")}</Text>
+              <Text style={styles.metaValue}>
+                {formatDate(product.updatedAt, language)}
+              </Text>
+            </View>
+          ) : null}
         </View>
 
         <View style={styles.actions}>
           <ErrorText message={deleteError} />
-          <Pressable
-            onPress={() => router.push(`/product/edit/${product.id}`)}
-            style={({ pressed }) => [
-              styles.editButton,
-              pressed && styles.pressed,
-            ]}
-          >
-            <Text style={styles.editButtonText}>{t("detail.edit_record")}</Text>
-            <Text style={styles.editGlyph}>✎</Text>
-          </Pressable>
           <SecondaryButton
             label={t("detail.delete_product")}
             danger
@@ -248,7 +237,7 @@ const styles = StyleSheet.create({
   },
   topBarTitle: { color: Colors.ink, fontSize: 15, fontWeight: "800" },
   productHero: { alignItems: "center", gap: 10, paddingBottom: 24 },
-  productImage: { width: 142, height: 142, borderRadius: 42 },
+  productImage: { width: 142, height: 142, borderRadius: 18 },
   imagePlaceholder: { alignItems: "center", justifyContent: "center" },
   imageInitial: { fontSize: 52, fontWeight: "800" },
   productName: {
@@ -272,7 +261,6 @@ const styles = StyleSheet.create({
     marginBottom: 14,
   },
   outcomeEyebrow: { fontSize: 12, fontWeight: "800", letterSpacing: 1 },
-  outcomeText: { fontSize: 31, fontWeight: "800", letterSpacing: -1 },
   infoCard: {
     borderRadius: Radius.md,
     backgroundColor: Colors.surface,
@@ -303,18 +291,6 @@ const styles = StyleSheet.create({
   },
   metaValue: { color: Colors.ink, fontSize: 13, fontWeight: "700" },
   actions: { gap: 10, marginTop: 4 },
-  editButton: {
-    minHeight: 56,
-    borderRadius: Radius.md,
-    backgroundColor: Colors.forest,
-    alignItems: "center",
-    justifyContent: "center",
-    flexDirection: "row",
-    gap: 10,
-  },
-  editButtonText: { color: Colors.white, fontSize: 15, fontWeight: "800" },
-  editGlyph: { color: Colors.white, fontSize: 18 },
-  pressed: { opacity: 0.7 },
   notFound: {
     flex: 1,
     backgroundColor: Colors.background,

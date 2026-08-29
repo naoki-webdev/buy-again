@@ -1,19 +1,33 @@
-import { router } from "expo-router";
+import { router, type Href } from "expo-router";
+import { useState } from "react";
 import { Linking, Pressable, StyleSheet, Text, View } from "react-native";
 
 import {
   AppHeader,
+  ErrorText,
   IconButton,
+  PrimaryButton,
   Screen,
   SecondaryButton,
 } from "@/components/ui";
 import { Colors, Radius, Spacing } from "@/constants/theme";
 import { type LanguagePreference, useTranslation } from "@/i18n";
+import { usePurchase } from "@/services/purchase-service";
 
 const LANGUAGE_OPTIONS: readonly LanguagePreference[] = ["system", "ja", "en"];
 
 export default function SettingsScreen() {
   const { language, preference, setPreference, t } = useTranslation();
+  const [languageError, setLanguageError] = useState(false);
+  const {
+    error: purchaseError,
+    isAvailable: isPurchaseAvailable,
+    isLoading: isPurchaseLoading,
+    isUnlocked,
+    localizedPrice,
+    purchaseUnlock,
+    restorePurchase,
+  } = usePurchase();
   const languageLabel =
     language === "ja" ? t("settings.japanese") : t("settings.english");
 
@@ -49,7 +63,13 @@ export default function SettingsScreen() {
                 key={option}
                 accessibilityRole="radio"
                 accessibilityState={{ selected }}
-                onPress={() => void setPreference(option)}
+                accessibilityLabel={optionCopy.label}
+                onPress={() => {
+                  setLanguageError(false);
+                  void setPreference(option).catch(() =>
+                    setLanguageError(true),
+                  );
+                }}
                 style={({ pressed }) => [
                   styles.option,
                   selected && styles.selectedOption,
@@ -69,7 +89,38 @@ export default function SettingsScreen() {
             );
           })}
         </View>
+        <ErrorText
+          message={languageError ? t("settings.language_save_failed") : null}
+        />
         <Text style={styles.note}>{t("settings.product_language_note")}</Text>
+      </View>
+
+      <View style={styles.section}>
+        <Text style={styles.sectionTitle}>{t("purchase.title")}</Text>
+        <Text style={styles.sectionDescription}>
+          {t("purchase.description")}
+        </Text>
+        <Text style={styles.current}>
+          {isUnlocked
+            ? t("purchase.unlocked")
+            : localizedPrice
+              ? t("purchase.price", { price: localizedPrice })
+              : t("purchase.price_unavailable")}
+        </Text>
+        {!isPurchaseAvailable ? (
+          <Text style={styles.note}>{t("purchase.dev_build_required")}</Text>
+        ) : null}
+        <PrimaryButton
+          label={t("purchase.unlock")}
+          onPress={() => void purchaseUnlock()}
+          disabled={isPurchaseLoading || isUnlocked || !isPurchaseAvailable}
+        />
+        <SecondaryButton
+          label={t("purchase.restore")}
+          onPress={() => void restorePurchase()}
+          disabled={isPurchaseLoading || !isPurchaseAvailable}
+        />
+        <ErrorText message={purchaseError} />
       </View>
 
       <View style={styles.section}>
@@ -79,6 +130,7 @@ export default function SettingsScreen() {
         </Text>
         <Pressable
           accessibilityRole="button"
+          accessibilityLabel={t("settings.privacy_policy")}
           onPress={() => router.push("/privacy")}
           style={({ pressed }) => [styles.infoCard, pressed && styles.pressed]}
         >
@@ -88,6 +140,36 @@ export default function SettingsScreen() {
             </Text>
             <Text style={styles.optionDescription}>
               {t("settings.privacy_description")}
+            </Text>
+          </View>
+          <Text style={styles.chevron}>›</Text>
+        </Pressable>
+        <Pressable
+          accessibilityRole="button"
+          accessibilityLabel={t("settings.terms")}
+          onPress={() => router.push("/terms" as Href)}
+          style={({ pressed }) => [styles.infoCard, pressed && styles.pressed]}
+        >
+          <View style={styles.optionCopy}>
+            <Text style={styles.optionLabel}>{t("settings.terms")}</Text>
+            <Text style={styles.optionDescription}>
+              {t("settings.terms_description")}
+            </Text>
+          </View>
+          <Text style={styles.chevron}>›</Text>
+        </Pressable>
+        <Pressable
+          accessibilityRole="button"
+          accessibilityLabel={t("settings.accessibility")}
+          onPress={() => router.push("/accessibility" as Href)}
+          style={({ pressed }) => [styles.infoCard, pressed && styles.pressed]}
+        >
+          <View style={styles.optionCopy}>
+            <Text style={styles.optionLabel}>
+              {t("settings.accessibility")}
+            </Text>
+            <Text style={styles.optionDescription}>
+              {t("settings.accessibility_description")}
             </Text>
           </View>
           <Text style={styles.chevron}>›</Text>

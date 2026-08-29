@@ -124,29 +124,72 @@ function readRows(): ProductRow[] {
   if (typeof localStorage === "undefined") {
     return [];
   }
+  return parseWebProductRows(localStorage.getItem("buy-again-products"));
+}
+
+export function parseWebProductRows(raw: string | null): ProductRow[] {
+  if (!raw) return [];
   try {
-    const raw: string | null = localStorage.getItem("buy-again-products");
-    if (!raw) return [];
     const parsed: unknown = JSON.parse(raw);
-    return Array.isArray(parsed)
-      ? parsed.filter(isProductRow).map((row) => ({
-          ...row,
-          brand: row.brand ?? "",
-        }))
-      : [];
+    if (!Array.isArray(parsed)) {
+      return [];
+    }
+    return parsed.flatMap((value) => {
+      const row = normalizeProductRow(value);
+      return row ? [row] : [];
+    });
   } catch {
     return [];
   }
 }
 
-function isProductRow(value: unknown): value is ProductRow {
-  if (typeof value !== "object" || value === null) return false;
+function normalizeProductRow(value: unknown): ProductRow | null {
+  if (typeof value !== "object" || value === null) return null;
   const row = value as Partial<ProductRow>;
+  if (
+    typeof row.id !== "number" ||
+    !Number.isInteger(row.id) ||
+    row.id <= 0 ||
+    typeof row.name !== "string" ||
+    typeof row.created_at !== "string" ||
+    typeof row.updated_at !== "string" ||
+    !isIsoDate(row.created_at) ||
+    !isIsoDate(row.updated_at) ||
+    (row.brand !== undefined && typeof row.brand !== "string") ||
+    (row.barcode !== null &&
+      row.barcode !== undefined &&
+      typeof row.barcode !== "string") ||
+    (row.image_uri !== null &&
+      row.image_uri !== undefined &&
+      typeof row.image_uri !== "string") ||
+    (row.note !== undefined && typeof row.note !== "string") ||
+    !isRating(row.rating)
+  ) {
+    return null;
+  }
+  return {
+    id: row.id,
+    name: row.name,
+    brand: row.brand ?? "",
+    barcode: row.barcode ?? null,
+    image_uri: row.image_uri ?? null,
+    rating: row.rating,
+    note: row.note ?? "",
+    created_at: row.created_at,
+    updated_at: row.updated_at,
+  };
+}
+
+function isIsoDate(value: string): boolean {
+  return value.length > 0 && Number.isFinite(new Date(value).getTime());
+}
+
+function isRating(value: unknown): value is ProductRow["rating"] {
   return (
-    typeof row.id === "number" &&
-    typeof row.name === "string" &&
-    typeof row.created_at === "string" &&
-    typeof row.updated_at === "string"
+    value === "buy_again" ||
+    value === "buy_if_cheap" ||
+    value === "maybe" ||
+    value === "never_again"
   );
 }
 

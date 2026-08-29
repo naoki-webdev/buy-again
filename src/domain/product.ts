@@ -1,3 +1,5 @@
+import type { TranslationKey } from "@/locales/types";
+
 export type Rating = "buy_again" | "buy_if_cheap" | "maybe" | "never_again";
 
 export type Product = {
@@ -34,8 +36,8 @@ export const MAX_NOTE_LENGTH = 2000;
 
 export type RatingOption = {
   value: Rating;
-  labelKey: string;
-  shortLabelKey: string;
+  labelKey: TranslationKey;
+  shortLabelKey: TranslationKey;
   color: string;
   backgroundColor: string;
 };

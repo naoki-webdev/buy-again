@@ -39,8 +39,20 @@ export default function PrivacyScreen() {
       <PolicySection title={t("privacy.permissions_title")}>
         {t("privacy.permissions_body")}
       </PolicySection>
+      <PolicySection title={t("privacy.security_title")}>
+        {t("privacy.security_body")}
+      </PolicySection>
       <PolicySection title={t("privacy.deletion_title")}>
         {t("privacy.deletion_body")}
+      </PolicySection>
+      <PolicySection title={t("privacy.third_party_title")}>
+        {t("privacy.third_party_body")}
+      </PolicySection>
+      <PolicySection title={t("privacy.purchase_title")}>
+        {t("privacy.purchase_body")}
+      </PolicySection>
+      <PolicySection title={t("privacy.contact_title")}>
+        {t("privacy.contact_body")}
       </PolicySection>
 
       <View style={styles.attribution}>

@@ -145,6 +145,7 @@ export default function ScanScreen() {
                 onPress={closeScanner}
                 accessibilityLabel={t("scan.close")}
                 accessibilityRole="button"
+                hitSlop={8}
                 style={styles.closeButton}
               >
                 <Text style={styles.closeGlyph}>×</Text>
@@ -181,6 +182,8 @@ export default function ScanScreen() {
             style={styles.manualInput}
             keyboardType="number-pad"
             returnKeyType="search"
+            accessibilityLabel={t("scan.barcode_placeholder")}
+            accessibilityHint={t("scan.search")}
             onSubmitEditing={() => void lookup(manualBarcode)}
           />
           <Pressable

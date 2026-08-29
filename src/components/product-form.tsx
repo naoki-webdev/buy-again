@@ -4,7 +4,6 @@ import { useEffect, useRef, useState } from "react";
 import { Image } from "expo-image";
 import {
   KeyboardAvoidingView,
-  Linking,
   Platform,
   ScrollView,
   StyleSheet,
@@ -35,7 +34,16 @@ import { getLocalizedErrorMessage, useTranslation } from "@/i18n";
 import { useProductStore } from "@/store/product-store";
 import { useProductDatabase } from "@/providers/database-provider";
 import { deleteImageUri, persistImageUri } from "@/services/image-storage";
-import { lookupOpenFoodFactsProduct } from "@/services/open-food-facts";
+import {
+  lookupOpenFoodFactsProduct,
+  mergeOpenFoodFactsSuggestion,
+} from "@/services/open-food-facts";
+import { getSelectedImageUri } from "@/services/image-picker";
+import {
+  canCreateProduct,
+  MAX_FREE_PRODUCTS,
+  usePurchase,
+} from "@/services/purchase-service";
 
 type ProductFormProps = {
   mode: "create" | "edit";
@@ -55,6 +63,13 @@ export function ProductFormScreen({ mode }: ProductFormProps) {
   const add = useProductStore((state) => state.add);
   const update = useProductStore((state) => state.update);
   const getById = useProductStore((state) => state.getById);
+  const showFlash = useProductStore((state) => state.showFlash);
+  const {
+    error: purchaseError,
+    isUnlocked,
+    isLoading: isPurchaseLoading,
+    purchaseUnlock,
+  } = usePurchase();
   const productId = typeof params.id === "string" ? Number(params.id) : null;
   const initialProduct = products.find((product) => product.id === productId);
   const [loadedProduct, setLoadedProduct] = useState<Product | null>(null);
@@ -82,6 +97,7 @@ export function ProductFormScreen({ mode }: ProductFormProps) {
           ...createEmptyDraft(barcodeParam),
         },
   );
+  const latestBarcodeRef = useRef(draft.barcode.trim());
   const [isLoading, setIsLoading] = useState(
     mode === "edit" && !initialProduct && isValidProductId,
   );
@@ -91,12 +107,16 @@ export function ProductFormScreen({ mode }: ProductFormProps) {
       ? t("errors.product_not_found")
       : null,
   );
-  const [photoPermissionBlocked, setPhotoPermissionBlocked] = useState(false);
   const [isExternalLookupFinished, setIsExternalLookupFinished] =
     useState(!shouldLookupExternal);
   const [hasAutoFilled, setHasAutoFilled] = useState(false);
+  const [externalLookupMessage, setExternalLookupMessage] = useState<
+    string | null
+  >(null);
   const saveInProgress = useRef(false);
   const isLookingUpExternal = shouldLookupExternal && !isExternalLookupFinished;
+  const isFreeLimitReached =
+    mode === "create" && !canCreateProduct(products.length, isUnlocked);
 
   useEffect(() => {
     if (mode === "create" || initialProduct) {
@@ -142,10 +162,31 @@ export function ProductFormScreen({ mode }: ProductFormProps) {
   }, [db, getById, initialProduct, isValidProductId, mode, productId, t]);
 
   useEffect(() => {
+    let isActive = true;
+    void ImagePicker.getPendingResultAsync()
+      .then((result) => {
+        if (!isActive) {
+          return;
+        }
+        const uri = getSelectedImageUri(result);
+        if (uri) {
+          setDraft((current) => ({ ...current, imageUri: uri }));
+        }
+      })
+      .catch(() => undefined);
+
+    return () => {
+      isActive = false;
+    };
+  }, []);
+
+  useEffect(() => {
     if (!shouldLookupExternal) {
       return;
     }
 
+    const requestedBarcode = barcodeParam.trim();
+    latestBarcodeRef.current = requestedBarcode;
     const controller = new AbortController();
     let isActive = true;
 
@@ -156,24 +197,27 @@ export function ProductFormScreen({ mode }: ProductFormProps) {
       controller.signal,
     )
       .then((externalProduct) => {
-        if (!isActive || !externalProduct) {
+        if (!isActive || latestBarcodeRef.current !== requestedBarcode) {
           return;
         }
-        setDraft((current) => ({
-          ...current,
-          ...(current.name.trim().length === 0 && externalProduct.productName
-            ? { name: externalProduct.productName }
-            : {}),
-          ...(current.brand.trim().length === 0 && externalProduct.brand
-            ? { brand: externalProduct.brand }
-            : {}),
-          ...(current.imageUri === null && externalProduct.imageUri
-            ? { imageUri: externalProduct.imageUri }
-            : {}),
-        }));
+        if (!externalProduct) {
+          setExternalLookupMessage(t("form.lookup_not_found"));
+          return;
+        }
+        setDraft((current) =>
+          mergeOpenFoodFactsSuggestion(
+            current,
+            requestedBarcode,
+            externalProduct,
+          ),
+        );
         setHasAutoFilled(true);
       })
-      .catch(() => undefined)
+      .catch(() => {
+        if (isActive) {
+          setExternalLookupMessage(t("form.lookup_failed"));
+        }
+      })
       .finally(() => {
         if (isActive) {
           setIsExternalLookupFinished(true);
@@ -184,32 +228,26 @@ export function ProductFormScreen({ mode }: ProductFormProps) {
       isActive = false;
       controller.abort();
     };
-  }, [barcodeParam, lookupLanguage, shouldLookupExternal]);
+  }, [barcodeParam, lookupLanguage, shouldLookupExternal, t]);
 
-  const updateDraft = (changes: Partial<ProductDraft>) =>
+  const updateDraft = (changes: Partial<ProductDraft>) => {
+    if (changes.barcode !== undefined) {
+      latestBarcodeRef.current = changes.barcode.trim();
+    }
     setDraft((current) => ({ ...current, ...changes }));
+  };
 
   const pickImage = async () => {
     try {
-      const permission =
-        await ImagePicker.requestMediaLibraryPermissionsAsync();
-      if (!permission.granted) {
-        setPhotoPermissionBlocked(!permission.canAskAgain);
-        setError(t("errors.photo_permission"));
-        return;
-      }
-      setPhotoPermissionBlocked(false);
       const result = await ImagePicker.launchImageLibraryAsync({
         mediaTypes: ["images"],
         allowsEditing: true,
         aspect: [1, 1],
         quality: 0.8,
       });
-      if (!result.canceled) {
-        const uri = result.assets[0]?.uri;
-        if (uri) {
-          updateDraft({ imageUri: uri });
-        }
+      const uri = getSelectedImageUri(result);
+      if (uri) {
+        updateDraft({ imageUri: uri });
       }
     } catch {
       setError(t("errors.photo_select_failed"));
@@ -227,6 +265,10 @@ export function ProductFormScreen({ mode }: ProductFormProps) {
     }
     if (mode === "edit" && !isValidProductId) {
       setError(t("errors.product_not_found"));
+      return;
+    }
+    if (isFreeLimitReached) {
+      setError(t("purchase.limit_blocked"));
       return;
     }
 
@@ -250,15 +292,24 @@ export function ProductFormScreen({ mode }: ProductFormProps) {
       newlyPersistedImageUri =
         imageUri && imageUri !== draft.imageUri ? imageUri : null;
       const draftToSave = { ...draft, imageUri };
-      const saved =
-        mode === "create"
-          ? await add(db, draftToSave)
-          : await update(db, productId as number, draftToSave);
+      if (mode === "create") {
+        await add(db, draftToSave);
+      } else {
+        await update(db, productId as number, draftToSave);
+      }
       databaseSaveCompleted = true;
       if (originalImageUri && originalImageUri !== imageUri) {
         await deleteImageUri(originalImageUri).catch(() => undefined);
       }
-      router.replace(`/product/${saved.id}`);
+      showFlash({
+        type: "success",
+        message: t(
+          mode === "create"
+            ? "messages.product_created"
+            : "messages.product_updated",
+        ),
+      });
+      router.replace("/products");
     } catch (saveError) {
       if (newlyPersistedImageUri && !databaseSaveCompleted) {
         await deleteImageUri(newlyPersistedImageUri).catch(() => undefined);
@@ -330,6 +381,10 @@ export function ProductFormScreen({ mode }: ProductFormProps) {
             </View>
           ) : null}
 
+          {externalLookupMessage ? (
+            <Text style={styles.lookupMessage}>{externalLookupMessage}</Text>
+          ) : null}
+
           {hasAutoFilled ? (
             <View style={styles.autoFillNotice}>
               <Text style={styles.autoFillTitle}>
@@ -341,10 +396,32 @@ export function ProductFormScreen({ mode }: ProductFormProps) {
             </View>
           ) : null}
 
+          {isFreeLimitReached ? (
+            <View style={styles.purchaseNotice}>
+              <Text style={styles.autoFillTitle}>
+                {t("purchase.limit_title")}
+              </Text>
+              <Text style={styles.autoFillDescription}>
+                {t("purchase.limit_description", {
+                  count: MAX_FREE_PRODUCTS,
+                })}
+              </Text>
+              <PrimaryButton
+                label={t("purchase.unlock")}
+                onPress={() => void purchaseUnlock()}
+                disabled={isPurchaseLoading}
+              />
+              <ErrorText message={purchaseError} />
+            </View>
+          ) : null}
+
           <View style={styles.photoSection}>
             {draft.imageUri ? (
               <Image
                 source={{ uri: draft.imageUri }}
+                cachePolicy={
+                  isRemoteImageUri(draft.imageUri) ? "memory" : undefined
+                }
                 contentFit="cover"
                 style={styles.photoPreview}
               />
@@ -421,12 +498,6 @@ export function ProductFormScreen({ mode }: ProductFormProps) {
           </View>
 
           <ErrorText message={error} />
-          {photoPermissionBlocked ? (
-            <SecondaryButton
-              label={t("form.photo_settings")}
-              onPress={() => void Linking.openSettings()}
-            />
-          ) : null}
           <View style={styles.actions}>
             <PrimaryButton
               label={
@@ -529,8 +600,21 @@ const styles = StyleSheet.create({
     gap: 5,
     marginBottom: 22,
   },
+  purchaseNotice: {
+    borderRadius: Radius.md,
+    backgroundColor: Colors.amberSoft,
+    padding: 14,
+    gap: 10,
+    marginBottom: 22,
+  },
   autoFillTitle: { color: Colors.forest, fontSize: 14, fontWeight: "800" },
   autoFillDescription: { color: Colors.muted, fontSize: 12, lineHeight: 18 },
+  lookupMessage: {
+    color: Colors.muted,
+    fontSize: 13,
+    lineHeight: 19,
+    marginBottom: 22,
+  },
 });
 
 function getParamString(value: string | string[] | undefined): string {

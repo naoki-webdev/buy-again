@@ -9,6 +9,7 @@
     "userInterfaceStyle": "light",
     "ios": {
       "icon": "./assets/images/icon.png",
+      "deploymentTarget": "16.4",
       "bundleIdentifier": "com.naokiwebdev.buyagain",
       "infoPlist": {
         "CFBundleAllowMixedLocalizations": true
@@ -16,6 +17,7 @@
     },
     "android": {
       "package": "com.naokiwebdev.buyagain",
+      "allowBackup": true,
       "adaptiveIcon": {
         "backgroundColor": "#285243",
         "foregroundImage": "./assets/images/android-icon-foreground.png",
@@ -60,7 +62,8 @@
             "android": ["ja", "en"]
           }
         }
-      ]
+      ],
+      "expo-iap"
     ],
     "locales": {
       "ja": "./locales/ja.json",

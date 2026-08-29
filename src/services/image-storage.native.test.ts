@@ -6,6 +6,7 @@ import {
 const mockFiles = new Map<string, { size?: number }>();
 const mockCopy = jest.fn();
 const mockDownload = jest.fn();
+const mockFetch = jest.fn();
 
 jest.mock("expo-file-system", () => {
   class MockDirectory {
@@ -80,6 +81,19 @@ describe("native image storage", () => {
     mockDownload.mockImplementation(async (destination: { uri: string }) => {
       mockFiles.set(destination.uri, { size: 1024 });
     });
+    jest.spyOn(globalThis, "fetch").mockImplementation(mockFetch);
+    mockFetch.mockReset();
+    mockFetch.mockResolvedValue({
+      ok: true,
+      headers: new Headers({
+        "content-type": "image/jpeg",
+        "content-length": "1024",
+      }),
+    });
+  });
+
+  afterEach(() => {
+    jest.restoreAllMocks();
   });
 
   it("端末画像を管理対象ディレクトリへコピーする", async () => {
@@ -111,6 +125,23 @@ describe("native image storage", () => {
     ).toBe(false);
   });
 
+  it("端末画像が大きすぎる場合は保存しない", async () => {
+    mockCopy.mockImplementationOnce(
+      async (_source: { uri: string }, destination: { uri: string }) => {
+        mockFiles.set(destination.uri, { size: 5 * 1024 * 1024 + 1 });
+      },
+    );
+
+    await expect(persistImageUri("file:///cache/large.jpg")).rejects.toThrow(
+      "画像サイズが大きすぎます。",
+    );
+    expect(
+      Array.from(mockFiles.keys()).some((uri) =>
+        uri.startsWith("file:///documents/product-images/"),
+      ),
+    ).toBe(false);
+  });
+
   it("管理対象の画像だけ削除する", async () => {
     const managedUri = "file:///documents/product-images/remove.jpg";
     const externalUri = "file:///cache/keep.jpg";
@@ -128,6 +159,27 @@ describe("native image storage", () => {
     await expect(
       persistImageUri("https://example.com/not-an-off-image.jpg"),
     ).rejects.toThrow("許可されていない画像URLです。");
+    expect(mockDownload).not.toHaveBeenCalled();
+  });
+
+  it("HEAD確認に失敗したリモート画像を保存しない", async () => {
+    mockFetch.mockRejectedValueOnce(new Error("network failed"));
+
+    await expect(
+      persistImageUri("https://images.openfoodfacts.org/image.jpg"),
+    ).rejects.toThrow("画像を確認できませんでした。");
+    expect(mockDownload).not.toHaveBeenCalled();
+  });
+
+  it("MIMEが画像でないリモート画像を保存しない", async () => {
+    mockFetch.mockResolvedValueOnce({
+      ok: true,
+      headers: new Headers({ "content-type": "text/html" }),
+    });
+
+    await expect(
+      persistImageUri("https://images.openfoodfacts.org/image.jpg"),
+    ).rejects.toThrow("画像ではないファイルです。");
     expect(mockDownload).not.toHaveBeenCalled();
   });
 });

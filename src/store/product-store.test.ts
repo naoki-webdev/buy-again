@@ -113,10 +113,26 @@ describe("product store", () => {
   beforeEach(() => {
     useProductStore.setState({
       products: [],
+      flashMessage: null,
       isHydrated: false,
       isLoading: false,
       error: null,
     });
+  });
+
+  it("フラッシュメッセージを表示して解除できる", () => {
+    useProductStore.getState().showFlash({
+      type: "success",
+      message: "商品を登録しました",
+    });
+
+    expect(useProductStore.getState().flashMessage).toEqual({
+      type: "success",
+      message: "商品を登録しました",
+    });
+
+    useProductStore.getState().clearFlash();
+    expect(useProductStore.getState().flashMessage).toBeNull();
   });
 
   it("hydrateでDBの記録を読み込み、CRUD後の状態を更新する", async () => {

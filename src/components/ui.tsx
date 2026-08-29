@@ -101,6 +101,7 @@ export function IconButton({
       onPress={onPress}
       accessibilityLabel={label}
       accessibilityRole="button"
+      hitSlop={6}
       style={({ pressed }) => [
         styles.iconButton,
         style,
@@ -128,6 +129,8 @@ export function PrimaryButton({
       onPress={onPress}
       disabled={disabled}
       accessibilityRole="button"
+      accessibilityLabel={label}
+      accessibilityState={{ disabled }}
       style={({ pressed }) => [
         styles.primaryButton,
         disabled && styles.disabled,
@@ -145,20 +148,26 @@ export function SecondaryButton({
   onPress,
   glyph,
   danger = false,
+  disabled = false,
 }: {
   label: string;
   onPress: () => void;
   glyph?: string;
   danger?: boolean;
+  disabled?: boolean;
 }) {
   return (
     <Pressable
       onPress={onPress}
+      disabled={disabled}
       accessibilityRole="button"
+      accessibilityLabel={label}
+      accessibilityState={{ disabled }}
       style={({ pressed }) => [
         styles.secondaryButton,
+        disabled && styles.disabled,
         danger && styles.dangerButton,
-        pressed && styles.pressed,
+        pressed && !disabled && styles.pressed,
       ]}
     >
       {glyph ? (
@@ -221,6 +230,7 @@ export function RatingPicker({
             key={option.value}
             onPress={() => onChange(option.value)}
             accessibilityRole="radio"
+            accessibilityLabel={t(option.labelKey)}
             accessibilityState={{ selected }}
             style={({ pressed }) => [
               styles.ratingChoice,
@@ -380,6 +390,7 @@ export function Field({
       </View>
       <TextInput
         {...props}
+        accessibilityLabel={label}
         placeholderTextColor={Colors.muted}
         style={[
           styles.input,
@@ -453,6 +464,40 @@ export function DatabaseErrorState({ onRetry }: { onRetry: () => void }) {
 
 export function ErrorText({ message }: { message: string | null }) {
   return message ? <Text style={styles.errorText}>{message}</Text> : null;
+}
+
+export function FlashMessageBanner({
+  type,
+  message,
+}: {
+  type: "success" | "error";
+  message: string;
+}) {
+  const isError = type === "error";
+  return (
+    <View
+      accessibilityRole="alert"
+      accessibilityLiveRegion="polite"
+      style={[styles.flashMessage, isError && styles.flashMessageError]}
+    >
+      <Text
+        style={[
+          styles.flashMessageIcon,
+          isError && styles.flashMessageErrorText,
+        ]}
+      >
+        {isError ? "!" : "✓"}
+      </Text>
+      <Text
+        style={[
+          styles.flashMessageText,
+          isError && styles.flashMessageErrorText,
+        ]}
+      >
+        {message}
+      </Text>
+    </View>
+  );
 }
 
 const styles = StyleSheet.create({
@@ -720,4 +765,33 @@ const styles = StyleSheet.create({
     maxWidth: 310,
   },
   errorText: { color: Colors.danger, fontSize: 13, lineHeight: 19 },
+  flashMessage: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 10,
+    borderWidth: 1,
+    borderColor: "#C7DDD2",
+    borderRadius: Radius.md,
+    backgroundColor: Colors.forestSoft,
+    paddingHorizontal: 14,
+    paddingVertical: 12,
+    marginBottom: 16,
+  },
+  flashMessageError: {
+    borderColor: "#EBCFC9",
+    backgroundColor: "#FFF4F1",
+  },
+  flashMessageIcon: {
+    width: 24,
+    height: 24,
+    borderRadius: 12,
+    color: Colors.white,
+    backgroundColor: Colors.forest,
+    textAlign: "center",
+    lineHeight: 24,
+    fontSize: 15,
+    fontWeight: "800",
+  },
+  flashMessageText: { color: Colors.forest, fontSize: 14, fontWeight: "700" },
+  flashMessageErrorText: { color: Colors.danger },
 });

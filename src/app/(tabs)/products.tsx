@@ -1,6 +1,7 @@
-import { router } from "expo-router";
-import { useState } from "react";
+import { router, useIsFocused } from "expo-router";
+import { useEffect, useState } from "react";
 import {
+  AccessibilityInfo,
   Pressable,
   ScrollView,
   StyleSheet,
@@ -13,6 +14,7 @@ import { SafeAreaView } from "react-native-safe-area-context";
 import {
   AppHeader,
   EmptyState,
+  FlashMessageBanner,
   IconButton,
   ProductCard,
 } from "@/components/ui";
@@ -23,10 +25,26 @@ import { useProductStore } from "@/store/product-store";
 
 export default function ProductsScreen() {
   const products = useProductStore((state) => state.products);
+  const flashMessage = useProductStore((state) => state.flashMessage);
+  const clearFlash = useProductStore((state) => state.clearFlash);
   const { t } = useTranslation();
+  const isFocused = useIsFocused();
   const [query, setQuery] = useState("");
   const [rating, setRating] = useState<Rating | "all">("all");
   const filtered = filterProducts(products, query, rating);
+
+  useEffect(() => {
+    if (isFocused && flashMessage) {
+      AccessibilityInfo.announceForAccessibility(flashMessage.message);
+    }
+
+    if (!isFocused || !flashMessage) {
+      return;
+    }
+
+    const timeoutId = setTimeout(clearFlash, 2500);
+    return () => clearTimeout(timeoutId);
+  }, [clearFlash, flashMessage, isFocused]);
 
   return (
     <SafeAreaView edges={["top"]} style={styles.root}>
@@ -47,6 +65,12 @@ export default function ProductsScreen() {
             />
           }
         />
+        {flashMessage ? (
+          <FlashMessageBanner
+            type={flashMessage.type}
+            message={flashMessage.message}
+          />
+        ) : null}
         <View style={styles.searchBox}>
           <Text style={styles.searchGlyph}>⌕</Text>
           <TextInput
@@ -56,11 +80,14 @@ export default function ProductsScreen() {
             placeholderTextColor={Colors.muted}
             style={styles.searchInput}
             returnKeyType="search"
+            accessibilityLabel={t("products.search_placeholder")}
           />
           {query ? (
             <Pressable
               onPress={() => setQuery("")}
+              accessibilityRole="button"
               accessibilityLabel={t("products.clear_search")}
+              hitSlop={8}
             >
               <Text style={styles.clearText}>×</Text>
             </Pressable>
@@ -113,6 +140,8 @@ export default function ProductsScreen() {
                 <Pressable
                   style={styles.emptyButton}
                   onPress={() => router.push("/add")}
+                  accessibilityRole="button"
+                  accessibilityLabel={t("products.add_label")}
                 >
                   <Text style={styles.emptyButtonText}>
                     {t("products.add_label")} ＋
@@ -149,14 +178,20 @@ function FilterChip({
     <Pressable
       onPress={onPress}
       accessibilityRole="button"
+      accessibilityLabel={label}
+      accessibilityState={{ selected }}
       style={({ pressed }) => [
         styles.filterChip,
         selected && { backgroundColor: color, borderColor: color },
         pressed && styles.pressed,
       ]}
     >
-      {selected && showDot ? (
-        <View style={[styles.chipDot, { backgroundColor: Colors.white }]} />
+      {showDot ? (
+        <View
+          style={[styles.chipDotSlot, selected && styles.chipDotSlotVisible]}
+        >
+          <View style={[styles.chipDot, { backgroundColor: Colors.white }]} />
+        </View>
       ) : null}
       <Text style={[styles.filterText, selected && styles.selectedFilterText]}>
         {label}
@@ -192,7 +227,8 @@ const styles = StyleSheet.create({
   filterScroll: { flexGrow: 0 },
   filterRow: { gap: 8, paddingVertical: 16 },
   filterChip: {
-    height: 36,
+    minHeight: 44,
+    minWidth: 72,
     borderRadius: Radius.pill,
     borderWidth: 1,
     borderColor: Colors.border,
@@ -201,7 +237,10 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     alignItems: "center",
     gap: 6,
+    flexShrink: 0,
   },
+  chipDotSlot: { width: 6, height: 6, opacity: 0 },
+  chipDotSlotVisible: { opacity: 1 },
   chipDot: { width: 6, height: 6, borderRadius: 3 },
   filterText: { color: Colors.muted, fontSize: 12, fontWeight: "700" },
   selectedFilterText: { color: Colors.white },

@@ -13,9 +13,12 @@ import type { Product, ProductDraft } from "@/domain/product";
 
 type ProductStore = {
   products: Product[];
+  flashMessage: FlashMessage | null;
   isHydrated: boolean;
   isLoading: boolean;
   error: string | null;
+  showFlash: (flashMessage: FlashMessage) => void;
+  clearFlash: () => void;
   hydrate: (db: ProductDatabase) => Promise<void>;
   add: (db: ProductDatabase, draft: ProductDraft) => Promise<Product>;
   update: (
@@ -31,11 +34,19 @@ type ProductStore = {
   getById: (db: ProductDatabase, id: number) => Promise<Product | null>;
 };
 
+export type FlashMessage = {
+  type: "success" | "error";
+  message: string;
+};
+
 export const useProductStore = create<ProductStore>((set) => ({
   products: [],
+  flashMessage: null,
   isHydrated: false,
   isLoading: false,
   error: null,
+  showFlash: (flashMessage) => set({ flashMessage }),
+  clearFlash: () => set({ flashMessage: null }),
   hydrate: async (db) => {
     set({ isLoading: true, isHydrated: false, error: null });
     try {

@@ -35,12 +35,9 @@ export const translations = {
       products: "商品一覧",
     },
     home: {
-      list_label: "商品一覧を開く",
       settings_label: "設定を開く",
-      kicker: "YOUR TASTE, REMEMBERED",
       title: "もう迷わない、\n買い物メモ。",
       subtitle: "買ってよかったものも、\nもう買わないものも、次の買い物へ。",
-      quick_check: "QUICK CHECK",
       scan: "バーコードをスキャン",
       scan_description: "登録済みなら、評価とメモをすぐ確認。",
       manual_add: "商品を手動登録",
@@ -99,6 +96,8 @@ export const translations = {
       lookup_title: "商品情報を確認しています",
       lookup_description:
         "見つかった情報を候補として入力します。必要なら保存前に編集できます。",
+      lookup_not_found: "商品情報が見つかりませんでした。手入力できます。",
+      lookup_failed: "商品情報を取得できませんでした。手入力できます。",
       auto_fill_title: "商品情報を自動入力しました",
       auto_fill_description:
         "Open Food Factsの情報です。内容を確認してから保存してください。",
@@ -114,7 +113,6 @@ export const translations = {
       rating: "評価",
       note: "メモ",
       note_placeholder: "味、使い心地、買った場所など",
-      photo_settings: "写真の設定を開く",
       saving: "保存中…",
       register: "商品を登録する",
       save_changes: "変更を保存",
@@ -148,8 +146,6 @@ export const translations = {
       lookup_failed: "商品を検索できませんでした。もう一度試してください。",
       product_not_found: "商品が見つかりません。",
       product_load_failed: "商品を読み込めませんでした。",
-      photo_permission:
-        "写真へのアクセスを許可すると、商品写真を登録できます。",
       photo_select_failed:
         "写真を選択できませんでした。もう一度試してください。",
       save_failed: "保存に失敗しました。",
@@ -177,16 +173,90 @@ export const translations = {
       current: "現在の設定：{language}",
       product_language_note:
         "バーコード検索時の商品名も、この言語を優先します。",
+      language_save_failed: "表示言語を保存できませんでした。",
       data_title: "データとプライバシー",
       data_description:
         "商品記録と写真はこの端末に保存されます。アプリを削除すると記録を失う可能性があります。",
       privacy_policy: "プライバシーポリシー",
       privacy_description:
         "保存する情報と外部サービスへの問い合わせについて確認できます。",
+      terms: "利用規約",
+      terms_description:
+        "アプリの利用条件と買い切りアンロックについて確認できます。",
+      accessibility: "アクセシビリティ方針",
+      accessibility_description:
+        "対応方針、代替手段、お問い合わせ先を確認できます。",
       attribution_title: "商品情報の提供元",
       attribution_description:
         "商品名、ブランド、画像の候補にOpen Food Factsを使用しています。",
       attribution_link: "Open Food Factsを開く",
+    },
+    purchase: {
+      title: "買い切りアンロック",
+      description:
+        "無料版は商品を20件まで登録できます。買い切りで登録数の上限を解除できます。",
+      price: "価格：{price}",
+      price_unavailable: "価格はストアで表示されます",
+      unlocked: "アンロック済み",
+      unlock: "買い切りで解除する",
+      restore: "購入を復元する",
+      dev_build_required:
+        "購入機能はApp StoreまたはGoogle Playの実機用ビルドで利用できます。",
+      limit_title: "無料版の登録上限に達しました",
+      limit_description:
+        "無料版では商品を{count}件まで登録できます。既存の記録は引き続き閲覧、編集、削除できます。",
+      limit_blocked: "新しい商品を登録するには、買い切りアンロックが必要です。",
+      purchase_failed: "購入を完了できませんでした。",
+      restore_failed: "購入を復元できませんでした。",
+      finish_failed: "購入の確認を完了できませんでした。",
+      store_unavailable: "購入ストアに接続できませんでした。",
+    },
+    terms: {
+      eyebrow: "TERMS",
+      title: "利用規約",
+      intro: "buy-againは、購入した商品の印象を記録する個人用メモアプリです。",
+      use_title: "サービスの性質",
+      use_body:
+        "在庫、発注、会計、品質管理を行う業務システムではありません。記録を食品の安全性、アレルギー、健康状態、医療上の判断の根拠に使用しないでください。",
+      storage_title: "データの保存",
+      storage_body:
+        "記録と写真は端末に保存されます。永続性、完全性、利用可能性、復旧可能性を保証しません。故障、紛失、OSの処理、アプリ削除などでデータが失われることがあります。本アプリを唯一の保存先にしないでください。",
+      external_title: "外部サービス",
+      external_body:
+        "バーコード検索のOpen Food Factsについて、情報の正確性、完全性、最新性を保証しません。通信障害、停止、仕様変更で利用できない場合があります。",
+      purchase_title: "買い切りアンロック",
+      purchase_body:
+        "無料版は商品を20件まで新規登録できます。買い切りアンロックはサブスクリプションではありません。価格、税、返金、購入履歴、復元は各ストアの規約と適用法令に従います。",
+      disclaimer_title: "免責と責任",
+      disclaimer_body:
+        "適用法令で許される範囲で、本アプリまたは外部サービスの利用による損害について責任を負いません。ただし、法令により制限できない責任、故意または重過失による責任などを除きます。",
+      changes_title: "規約の変更",
+      changes_body:
+        "必要に応じて規約を変更することがあります。変更後の規約は、本アプリまたは配布ページで告知した時点から適用します。",
+      law_title: "準拠法と管轄",
+      law_body:
+        "本規約は日本法に準拠します。紛争は、適用法令が定める管轄裁判所によって解決します。",
+      contact_title: "お問い合わせ",
+      contact_body:
+        "開発者：［公開する開発者名または事業者名に置き換えてください］\nお問い合わせ：privacy@example.com",
+    },
+    accessibility: {
+      eyebrow: "ACCESSIBILITY",
+      title: "アクセシビリティ",
+      intro:
+        "VoiceOverとTalkBackで操作しやすい画面、文字サイズを大きくした場合にも確認しやすいレイアウトを目指して改善しています。",
+      interaction_title: "操作と表示",
+      interaction_body:
+        "重要な操作には読み上げ用の名前を設定し、評価は色だけでなくラベルでも示します。大きな文字設定や画面サイズによる表示の変化を継続的に確認します。",
+      alternative_title: "代替手段",
+      alternative_body:
+        "バーコードはカメラを使わず番号を手入力できます。カメラや写真へのアクセスを許可しなくても、手入力と写真なしの記録を利用できます。",
+      standard_title: "参照基準",
+      standard_body:
+        "WCAG 2.2 AAを参照していますが、本アプリが同基準に完全準拠していることを表明するものではありません。",
+      contact_title: "お問い合わせ",
+      contact_body:
+        "利用上の問題や改善提案はprivacy@example.comまでお知らせください。",
     },
     privacy: {
       eyebrow: "PRIVACY",
@@ -195,17 +265,34 @@ export const translations = {
         "buy-againは、買った商品の記録を端末内で管理する個人用アプリです。",
       local_title: "端末内に保存する情報",
       local_body:
-        "商品名、ブランド、バーコード、評価、メモ、登録日時、商品写真を端末内に保存します。アカウント登録やクラウド同期はありません。アプリを削除すると、記録と写真を失う可能性があります。",
+        "商品名、ブランド、バーコード、評価、メモ、登録日時、更新日時、商品写真を端末内に保存します。商品記録およびアプリ内に保存した商品写真（ユーザーが選択した写真やOpen Food Factsから取得した画像）を、開発者のサーバーへ送信することはありません。商品記録は、ユーザーがアプリ内で削除するか、アプリを削除するまで端末内に保持されます。アカウント登録、広告、アクセス解析、開発者が運営するサーバーへのクラウド同期は行いません。端末のOSバックアップ設定によっては、GoogleまたはAppleが提供するバックアップ機能の対象となる場合があります。",
       network_title: "Open Food Factsへの問い合わせ",
       network_body:
-        "未登録の食品バーコードを確認するとき、バーコード番号と表示言語をOpen Food Factsへ送信します。取得した商品名、ブランド、画像は保存前に確認と編集ができます。",
+        "未登録の食品バーコードを確認するとき、アプリはバーコード番号と表示言語をOpen Food Factsへ送信します。商品記録や写真は検索リクエストに含めません。APIリクエストには、アプリ名、バージョン、公開リポジトリURLを含むUser-Agentも設定します。取得した商品名、ブランド、画像は保存前に確認と編集ができます。Open Food Facts側での情報の保持と削除には、同サービスのプライバシーポリシーと利用条件が適用されます。buy-againの開発者は、Open Food Facts側に保存された情報を管理しません。",
       permissions_title: "端末の権限",
       permissions_body:
-        "カメラはバーコード読み取り時に使用します。写真へのアクセスは商品写真の選択時に使用します。どちらも許可しなくても、手入力と写真なしの記録は利用できます。",
+        "カメラはバーコード読み取り時に使用します。写真へのアクセスは商品写真の選択時に使用します。どちらも許可しなくても、手入力と写真なしの記録は利用できます。カメラおよび写真へのアクセス許可は、端末の設定からいつでも変更または取り消すことができます。",
+      security_title: "安全な取り扱い",
+      security_body:
+        "商品記録と写真は、アプリ専用の端末内領域に保存します。Open Food Factsとの通信にはHTTPSを使用します。",
       deletion_title: "削除",
       deletion_body:
-        "商品詳細画面から商品記録と保存した商品写真を削除できます。Open Food Factsへ送信したバーコードの削除依頼は、同サービスの案内を確認してください。",
+        "商品詳細画面から商品記録を削除できます。商品記録を削除すると、buy-againが端末内に保存した商品写真も削除します。Open Food Factsへ送信したバーコードの削除や、同サービスでのデータ処理に関する問い合わせは、同サービスのプライバシーポリシーに記載された方法で行ってください。",
+      third_party_title: "第三者サービスとライセンス",
+      third_party_body:
+        "商品情報はOpen Food Factsのデータを利用しています。データベースはOpen Database License（ODbL）、個別のデータ内容はDatabase Contents License、商品画像はCreative Commons Attribution-ShareAlike（CC BY-SA）の条件で提供されています。ライセンスの詳細と再利用条件は、Open Food Factsの公式サイトで確認してください。",
+      purchase_title: "App StoreとGoogle Playの購入",
+      purchase_body:
+        "買い切りアンロックを利用する場合、決済情報はAppleまたはGoogleが処理します。buy-againの開発者はカード情報を取得しません。購入状態の確認には、各ストアが提供する購入情報をアプリが利用します。購入、返金、請求履歴には各ストアのプライバシーポリシーと利用規約が適用されます。",
+      contact_title: "開発者情報とお問い合わせ",
+      contact_body:
+        "開発者：［公開する開発者名または事業者名に置き換えてください］\nプライバシーに関するお問い合わせ：privacy@example.com",
       off_link: "Open Food Factsのサイトを開く",
+    },
+    messages: {
+      product_created: "商品を登録しました",
+      product_updated: "変更を保存しました",
+      product_deleted: "商品を削除しました",
     },
   },
   en: {
@@ -243,12 +330,9 @@ export const translations = {
       products: "Products",
     },
     home: {
-      list_label: "Open product list",
       settings_label: "Open settings",
-      kicker: "YOUR TASTE, REMEMBERED",
       title: "Never wonder again,\nyour shopping memory.",
       subtitle: "Remember what you loved,\nand what you will skip next time.",
-      quick_check: "QUICK CHECK",
       scan: "Scan a barcode",
       scan_description: "See your rating and notes right away.",
       manual_add: "Add a product manually",
@@ -305,6 +389,10 @@ export const translations = {
       lookup_title: "Checking product information",
       lookup_description:
         "Found information will be added as a suggestion. Review it before saving.",
+      lookup_not_found:
+        "No product information was found. You can enter it manually.",
+      lookup_failed:
+        "Product information could not be retrieved. You can enter it manually.",
       auto_fill_title: "Product information added",
       auto_fill_description:
         "This information came from Open Food Facts. Review it before saving.",
@@ -320,7 +408,6 @@ export const translations = {
       rating: "Rating",
       note: "Note",
       note_placeholder: "Taste, how it worked, where you bought it…",
-      photo_settings: "Open photo settings",
       saving: "Saving…",
       register: "Add product",
       save_changes: "Save changes",
@@ -354,7 +441,6 @@ export const translations = {
       lookup_failed: "Could not search for the product. Try again.",
       product_not_found: "Product not found.",
       product_load_failed: "Could not load the product.",
-      photo_permission: "Allow photo access to add a product photo.",
       photo_select_failed: "Could not select a photo. Try again.",
       save_failed: "Could not save the product.",
       register_failed: "Could not add the product.",
@@ -382,16 +468,90 @@ export const translations = {
       current: "Current setting: {language}",
       product_language_note:
         "Barcode lookups also prioritize product names in this language.",
+      language_save_failed: "The display language could not be saved.",
       data_title: "Data and privacy",
       data_description:
         "Product records and photos stay on this device. Uninstalling the app may remove them.",
       privacy_policy: "Privacy policy",
       privacy_description:
         "See what is stored and when an external service is contacted.",
+      terms: "Terms of use",
+      terms_description: "See the app terms and one-time unlock conditions.",
+      accessibility: "Accessibility",
+      accessibility_description:
+        "See supported interactions, alternatives, and contact details.",
       attribution_title: "Product information source",
       attribution_description:
         "Open Food Facts provides product name, brand, and image suggestions.",
       attribution_link: "Open Open Food Facts",
+    },
+    purchase: {
+      title: "One-time unlock",
+      description:
+        "The free version supports up to 20 products. A one-time purchase removes the registration limit.",
+      price: "Price: {price}",
+      price_unavailable: "The price is shown by the store",
+      unlocked: "Unlocked",
+      unlock: "Unlock with one-time purchase",
+      restore: "Restore purchase",
+      dev_build_required:
+        "Purchases are available in a physical App Store or Google Play build.",
+      limit_title: "Free registration limit reached",
+      limit_description:
+        "The free version supports up to {count} products. You can still view, edit, and delete existing records.",
+      limit_blocked: "A one-time unlock is required to add another product.",
+      purchase_failed: "The purchase could not be completed.",
+      restore_failed: "The purchase could not be restored.",
+      finish_failed: "The purchase could not be confirmed.",
+      store_unavailable: "Could not connect to the purchase store.",
+    },
+    terms: {
+      eyebrow: "TERMS",
+      title: "Terms of use",
+      intro:
+        "buy-again is a personal memo app for recording impressions of products you bought.",
+      use_title: "Service scope",
+      use_body:
+        "The app is not an inventory, ordering, accounting, or quality-control system. Do not use records as a basis for food safety, allergy, health, or medical decisions.",
+      storage_title: "Data storage",
+      storage_body:
+        "Records and photos are stored on the device. Persistence, integrity, availability, and recovery are not guaranteed. Data may be lost through device failure, loss, OS processing, or app deletion. Do not use this app as your only storage.",
+      external_title: "External services",
+      external_body:
+        "Open Food Facts is used for barcode lookup. The accuracy, completeness, and freshness of its information are not guaranteed. Network failures, outages, and changes may make it unavailable.",
+      purchase_title: "One-time unlock",
+      purchase_body:
+        "The free version supports up to 20 new product registrations. The one-time unlock is not a subscription. Price, tax, refunds, purchase history, and restoration follow the store terms and applicable law.",
+      disclaimer_title: "Disclaimers and liability",
+      disclaimer_body:
+        "To the extent permitted by law, the developer is not liable for damage arising from use of the app or external services. This excludes liability that cannot be limited by law, or liability for wilful misconduct or gross negligence.",
+      changes_title: "Changes to these terms",
+      changes_body:
+        "These terms may be changed when necessary. Updated terms apply when announced in the app or on its distribution page.",
+      law_title: "Governing law and jurisdiction",
+      law_body:
+        "These terms are governed by the laws of Japan. Disputes are handled by the court with jurisdiction under applicable law.",
+      contact_title: "Contact",
+      contact_body:
+        "Developer: [Replace with the public developer or business name]\nContact: privacy@example.com",
+    },
+    accessibility: {
+      eyebrow: "ACCESSIBILITY",
+      title: "Accessibility",
+      intro:
+        "We continue improving screens for VoiceOver and TalkBack, larger text sizes, and layouts that remain understandable across screen sizes.",
+      interaction_title: "Interaction and display",
+      interaction_body:
+        "Meaningful controls have spoken names, and ratings are identified by labels as well as color. We continue checking behavior with larger text and different screen sizes.",
+      alternative_title: "Alternatives",
+      alternative_body:
+        "Barcodes can be entered manually without using the camera. You can use manual entry and save records without photos when camera or photo access is not granted.",
+      standard_title: "Reference standard",
+      standard_body:
+        "WCAG 2.2 AA is used as a reference. This is not a claim that the app fully conforms to that standard.",
+      contact_title: "Contact",
+      contact_body:
+        "Please send accessibility issues or suggestions to privacy@example.com.",
     },
     privacy: {
       eyebrow: "PRIVACY",
@@ -400,17 +560,34 @@ export const translations = {
         "buy-again is a personal app for keeping shopping memories on your device.",
       local_title: "Information stored on this device",
       local_body:
-        "Product names, brands, barcodes, ratings, notes, dates, and product photos are stored on this device. There is no account or cloud sync. Uninstalling the app may remove your records and photos.",
+        "The app stores product names, brands, barcodes, ratings, notes, creation and update dates, and product photos on the device. Product records and product photos saved in the app, including photos selected by the user and images retrieved from Open Food Facts, are not sent to the developer's servers. Product records remain on the device until the user deletes them in the app or uninstalls the app. The app does not require an account and does not use advertising, analytics, or cloud synchronization to servers operated by the developer. Depending on your device's OS backup settings, Google or Apple backup services may include this data.",
       network_title: "Open Food Facts requests",
       network_body:
-        "When you check an unregistered food barcode, the barcode and display language are sent to Open Food Facts. You can review and edit returned names, brands, and images before saving.",
+        "When checking an unregistered food barcode, the app sends the barcode number and display language to Open Food Facts. Product records and photos are not included in search requests. API requests also include a User-Agent containing the app name, version, and public repository URL. You can review and edit returned names, brands, and images before saving. Open Food Facts' Privacy Policy and Terms of Use apply to the retention and deletion of information on that service. The buy-again developer does not manage information stored by Open Food Facts.",
       permissions_title: "Device permissions",
       permissions_body:
-        "The camera is used when scanning barcodes. Photo access is used when choosing a product photo. You can still enter records manually without either permission.",
+        "The camera is used when scanning barcodes. Photo access is used when selecting a product photo. You can still enter barcodes manually and register products without photos if you do not grant these permissions. Camera and photo access permissions can be changed or revoked at any time in the device settings.",
+      security_title: "Secure handling",
+      security_body:
+        "Product records and photos are stored in the app-specific storage area on the device. The app uses HTTPS for communication with Open Food Facts.",
       deletion_title: "Deletion",
       deletion_body:
-        "You can delete a product record and its saved product photo from the product detail screen. For a barcode sent to Open Food Facts, follow that service's guidance.",
+        "You can delete a product record from the product detail screen. Deleting a product record also deletes the product photo saved on the device by buy-again. For deletion requests concerning a barcode sent to Open Food Facts or questions about its data processing, use the contact methods described in the Open Food Facts Privacy Policy.",
+      third_party_title: "Third-party service and licenses",
+      third_party_body:
+        "Product information is provided using data from Open Food Facts. The database is provided under the Open Database License (ODbL), individual database contents under the Database Contents License, and product images under the Creative Commons Attribution-ShareAlike (CC BY-SA) terms. See the Open Food Facts official site for license details and reuse conditions.",
+      purchase_title: "App Store and Google Play purchases",
+      purchase_body:
+        "If you use the one-time unlock, Apple or Google processes the payment information. The buy-again developer does not receive card details. The app uses purchase information provided by the stores to check the unlock state. The stores' privacy policies and terms apply to purchases, refunds, and billing history.",
+      contact_title: "Developer information and contact",
+      contact_body:
+        "Developer: [Replace with the public developer or business name]\nPrivacy inquiries: privacy@example.com",
       off_link: "Open the Open Food Facts site",
+    },
+    messages: {
+      product_created: "Product added",
+      product_updated: "Changes saved",
+      product_deleted: "Product deleted",
     },
   },
 } as const;

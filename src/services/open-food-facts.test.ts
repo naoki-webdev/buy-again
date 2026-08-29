@@ -1,10 +1,47 @@
 import {
   isOpenFoodFactsImageUri,
   lookupOpenFoodFactsProduct,
+  mergeOpenFoodFactsSuggestion,
   type OpenFoodFactsFetcher,
 } from "@/services/open-food-facts";
+import type { ProductDraft } from "@/domain/product";
+
+const emptyDraft: ProductDraft = {
+  name: "",
+  brand: "",
+  barcode: "4900000000001",
+  imageUri: null,
+  rating: "buy_again",
+  note: "",
+};
 
 describe("Open Food Facts service", () => {
+  it("バーコードが変わった後に返った古い候補を反映しない", () => {
+    const changedDraft = { ...emptyDraft, barcode: "4900000000002" };
+
+    expect(
+      mergeOpenFoodFactsSuggestion(changedDraft, "4900000000001", {
+        productName: "古い商品",
+        brand: "古いブランド",
+        imageUri: "https://images.openfoodfacts.org/old.jpg",
+      }),
+    ).toBe(changedDraft);
+  });
+
+  it("同じバーコードの候補だけ空欄へ自動入力する", () => {
+    expect(
+      mergeOpenFoodFactsSuggestion(emptyDraft, "4900000000001", {
+        productName: "商品名",
+        brand: "ブランド",
+        imageUri: "https://images.openfoodfacts.org/image.jpg",
+      }),
+    ).toMatchObject({
+      name: "商品名",
+      brand: "ブランド",
+      imageUri: "https://images.openfoodfacts.org/image.jpg",
+    });
+  });
+
   it("許可されたOpen Food Facts画像ホストだけを受け付ける", () => {
     expect(
       isOpenFoodFactsImageUri(
@@ -196,6 +233,21 @@ describe("Open Food Facts service", () => {
     await expect(
       lookupOpenFoodFactsProduct("4900000000001", "en", fetcher),
     ).resolves.toMatchObject({ productName: "あ".repeat(120) });
+  });
+
+  it("ブランドを保存上限の100文字に切り詰める", async () => {
+    const fetcher: OpenFoodFactsFetcher = async () => ({
+      ok: true,
+      status: 200,
+      json: async () => ({
+        status: "success",
+        product: { product_name: "商品", brands: "あ".repeat(101) },
+      }),
+    });
+
+    await expect(
+      lookupOpenFoodFactsProduct("4900000000001", "ja", fetcher),
+    ).resolves.toMatchObject({ brand: "あ".repeat(100) });
   });
 
   it("呼び出し元のAbortSignalで検索を中断できる", async () => {

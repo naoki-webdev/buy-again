@@ -51,6 +51,13 @@ export async function persistImageUri(uri: string): Promise<string> {
   );
   try {
     await source.copy(destination);
+    const info = destination.info();
+    if (info.size !== undefined && info.size > MAX_IMAGE_BYTES) {
+      if (destination.exists) {
+        destination.delete();
+      }
+      throw new Error("画像サイズが大きすぎます。");
+    }
   } catch (error) {
     if (destination.exists) {
       destination.delete();
@@ -86,11 +93,11 @@ async function validateRemoteImage(uri: string): Promise<void> {
   try {
     const response = await fetch(uri, { method: "HEAD" });
     if (!response.ok) {
-      return;
+      throw new Error("画像を確認できませんでした。");
     }
 
     const contentType = response.headers.get("content-type");
-    if (contentType && !contentType.toLowerCase().startsWith("image/")) {
+    if (!contentType || !contentType.toLowerCase().startsWith("image/")) {
       throw new Error("画像ではないファイルです。");
     }
 
@@ -99,8 +106,7 @@ async function validateRemoteImage(uri: string): Promise<void> {
       throw new Error("画像サイズが大きすぎます。");
     }
   } catch (error) {
-    if (error instanceof Error && /画像/.test(error.message)) {
-      throw error;
-    }
+    if (error instanceof Error && /画像/.test(error.message)) throw error;
+    throw new Error("画像を確認できませんでした。");
   }
 }

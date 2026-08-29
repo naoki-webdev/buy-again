@@ -10,6 +10,7 @@ import {
   LogoMark,
   PrimaryButton,
   ProductCard,
+  SecondaryButton,
   SectionTitle,
   StatCard,
 } from "@/components/ui";
@@ -46,11 +47,6 @@ export default function HomeScreen() {
               <View style={styles.homeHeader}>
                 <LogoMark />
                 <IconButton
-                  label={t("home.list_label")}
-                  glyph="☷"
-                  onPress={() => router.push("/products")}
-                />
-                <IconButton
                   label={t("home.settings_label")}
                   glyph="⚙"
                   onPress={() => router.push("/settings")}
@@ -60,7 +56,6 @@ export default function HomeScreen() {
           />
 
           <View style={styles.intro}>
-            <Text style={styles.kicker}>{t("home.kicker")}</Text>
             <Text style={styles.title}>{t("home.title")}</Text>
             <Text style={styles.subtitle}>{t("home.subtitle")}</Text>
           </View>
@@ -68,13 +63,14 @@ export default function HomeScreen() {
           <Pressable
             onPress={() => router.push("/scan")}
             accessibilityRole="button"
+            accessibilityLabel={t("home.scan")}
+            accessibilityHint={t("home.scan_description")}
             style={({ pressed }) => [
               styles.scanCard,
               pressed && styles.scanPressed,
             ]}
           >
             <View style={styles.scanCardCopy}>
-              <Text style={styles.scanEyebrow}>{t("home.quick_check")}</Text>
               <Text style={styles.scanTitle}>{t("home.scan")}</Text>
               <Text style={styles.scanDescription}>
                 {t("home.scan_description")}
@@ -86,34 +82,41 @@ export default function HomeScreen() {
           </Pressable>
 
           <View style={styles.manualAction}>
-            <PrimaryButton
+            <SecondaryButton
               label={t("home.manual_add")}
               glyph="＋"
               onPress={() => router.push("/add")}
             />
           </View>
 
-          <View style={styles.statsRow}>
-            <StatCard
-              value={buyAgainCount}
-              label={t("home.buy_again_count")}
-              color={Colors.forestSoft}
-              glyph="↻"
-            />
-            <StatCard
-              value={neverAgainCount}
-              label={t("home.never_again_count")}
-              color={Colors.coralSoft}
-              glyph="×"
-            />
-          </View>
+          {products.length > 0 ? (
+            <View style={styles.statsRow}>
+              <StatCard
+                value={buyAgainCount}
+                label={t("home.buy_again_count")}
+                color={Colors.forestSoft}
+                glyph="↻"
+              />
+              <StatCard
+                value={neverAgainCount}
+                label={t("home.never_again_count")}
+                color={Colors.coralSoft}
+                glyph="×"
+              />
+            </View>
+          ) : null}
 
           <View style={styles.recentSection}>
             <SectionTitle
               title={t("home.recent")}
               action={
                 products.length > 0 ? (
-                  <Pressable onPress={() => router.push("/products")}>
+                  <Pressable
+                    onPress={() => router.push("/products")}
+                    accessibilityRole="button"
+                    accessibilityLabel={t("home.view_all")}
+                    hitSlop={8}
+                  >
                     <Text style={styles.linkText}>{t("home.view_all")}</Text>
                   </Pressable>
                 ) : null
@@ -156,13 +159,7 @@ const styles = StyleSheet.create({
   },
   scrollContent: { paddingBottom: 24 },
   homeHeader: { flexDirection: "row", alignItems: "center", gap: 18 },
-  intro: { paddingTop: 8, paddingBottom: 24, gap: 10 },
-  kicker: {
-    color: Colors.coral,
-    fontSize: 11,
-    fontWeight: "800",
-    letterSpacing: 1.25,
-  },
+  intro: { paddingTop: 0, paddingBottom: 20, gap: 10 },
   title: {
     color: Colors.ink,
     fontSize: 38,
@@ -187,12 +184,6 @@ const styles = StyleSheet.create({
   },
   scanPressed: { opacity: 0.9, transform: [{ scale: 0.99 }] },
   scanCardCopy: { flex: 1, gap: 8 },
-  scanEyebrow: {
-    color: "#A8C6B2",
-    fontSize: 10,
-    letterSpacing: 1.4,
-    fontWeight: "800",
-  },
   scanTitle: {
     color: Colors.white,
     fontSize: 21,

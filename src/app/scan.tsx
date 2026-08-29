@@ -19,6 +19,10 @@ import { ErrorText, PrimaryButton } from "@/components/ui";
 import { Colors, Radius, Spacing } from "@/constants/theme";
 import { validateBarcode } from "@/domain/product";
 import { useProductDatabase } from "@/providers/database-provider";
+import {
+  buildSuggestedProductName,
+  lookupOpenFoodFactsProduct,
+} from "@/services/open-food-facts";
 import { useProductStore } from "@/store/product-store";
 
 export default function ScanScreen() {
@@ -54,9 +58,29 @@ export default function ScanScreen() {
       if (existing) {
         router.replace(`/product/${existing.id}`);
       } else {
+        let externalProduct = null;
+        try {
+          externalProduct = await lookupOpenFoodFactsProduct(normalizedBarcode);
+        } catch {
+          externalProduct = null;
+        }
+
+        const suggestedName = externalProduct
+          ? buildSuggestedProductName(
+              externalProduct.productName,
+              externalProduct.brand,
+            )
+          : "";
         router.replace({
           pathname: "/add",
-          params: { barcode: normalizedBarcode },
+          params: {
+            barcode: normalizedBarcode,
+            ...(suggestedName ? { name: suggestedName } : {}),
+            ...(externalProduct?.imageUri
+              ? { imageUri: externalProduct.imageUri }
+              : {}),
+            ...(externalProduct ? { source: "open-food-facts" } : {}),
+          },
         });
       }
     } catch {
@@ -172,7 +196,7 @@ export default function ScanScreen() {
         </View>
         <ErrorText message={error} />
         {isFinding ? (
-          <Text style={styles.findingText}>記録を検索しています…</Text>
+          <Text style={styles.findingText}>商品情報を確認しています…</Text>
         ) : null}
       </View>
     </View>

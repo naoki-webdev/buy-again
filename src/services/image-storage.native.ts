@@ -9,6 +9,22 @@ export async function persistImageUri(uri: string): Promise<string> {
 
   imageDirectory.create({ idempotent: true, intermediates: true });
 
+  if (isRemoteImageUri(uri)) {
+    const destination = new File(
+      imageDirectory,
+      `product-${Date.now()}-${Math.random().toString(36).slice(2)}.jpg`,
+    );
+    try {
+      const downloaded = await File.downloadFileAsync(uri, destination);
+      return downloaded.uri;
+    } catch (error) {
+      if (destination.exists) {
+        destination.delete();
+      }
+      throw error;
+    }
+  }
+
   const source = new File(uri);
   const extension = source.extension || ".jpg";
   const destination = new File(
@@ -42,4 +58,8 @@ function isManagedImageUri(uri: string): boolean {
     ? imageDirectory.uri
     : `${imageDirectory.uri}/`;
   return uri.startsWith(directoryPrefix);
+}
+
+function isRemoteImageUri(uri: string): boolean {
+  return uri.startsWith("https://");
 }

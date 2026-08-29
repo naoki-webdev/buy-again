@@ -36,9 +36,17 @@ type ProductFormProps = {
   mode: "create" | "edit";
 };
 
+type ProductFormParams = {
+  id?: string;
+  barcode?: string;
+  name?: string;
+  imageUri?: string;
+  source?: string;
+};
+
 export function ProductFormScreen({ mode }: ProductFormProps) {
   const db = useProductDatabase();
-  const params = useLocalSearchParams<{ id?: string; barcode?: string }>();
+  const params = useLocalSearchParams<ProductFormParams>();
   const products = useProductStore((state) => state.products);
   const add = useProductStore((state) => state.add);
   const update = useProductStore((state) => state.update);
@@ -48,6 +56,11 @@ export function ProductFormScreen({ mode }: ProductFormProps) {
   const [loadedProduct, setLoadedProduct] = useState<Product | null>(null);
   const sourceProduct = initialProduct ?? loadedProduct;
   const originalImageUri = sourceProduct?.imageUri ?? null;
+  const barcodeParam = getParamString(params.barcode);
+  const nameParam = getParamString(params.name);
+  const imageUriParam = getParamString(params.imageUri);
+  const isAutoFilled =
+    mode === "create" && getParamString(params.source) === "open-food-facts";
   const [draft, setDraft] = useState<ProductDraft>(() =>
     initialProduct
       ? {
@@ -57,9 +70,11 @@ export function ProductFormScreen({ mode }: ProductFormProps) {
           rating: initialProduct.rating,
           note: initialProduct.note,
         }
-      : createEmptyDraft(
-          typeof params.barcode === "string" ? params.barcode : "",
-        ),
+      : {
+          ...createEmptyDraft(barcodeParam),
+          name: nameParam,
+          imageUri: imageUriParam || null,
+        },
   );
   const [isLoading, setIsLoading] = useState(
     mode === "edit" && !initialProduct,
@@ -224,6 +239,17 @@ export function ProductFormScreen({ mode }: ProductFormProps) {
             </Text>
           </View>
 
+          {isAutoFilled ? (
+            <View style={styles.autoFillNotice}>
+              <Text style={styles.autoFillTitle}>
+                商品情報を自動入力しました
+              </Text>
+              <Text style={styles.autoFillDescription}>
+                Open Food Factsの情報です。内容を確認してから保存してください。
+              </Text>
+            </View>
+          ) : null}
+
           <View style={styles.photoSection}>
             {draft.imageUri ? (
               <Image
@@ -250,7 +276,7 @@ export function ProductFormScreen({ mode }: ProductFormProps) {
               placeholder="例：無糖カフェラテ"
               value={draft.name}
               onChangeText={(name) => updateDraft({ name })}
-              autoFocus={mode === "create"}
+              autoFocus={mode === "create" && !isAutoFilled}
             />
             <Field
               label="バーコード"
@@ -375,4 +401,17 @@ const styles = StyleSheet.create({
   },
   ratingSection: { gap: 0 },
   actions: { gap: 10, marginTop: 26 },
+  autoFillNotice: {
+    borderRadius: Radius.md,
+    backgroundColor: Colors.forestSoft,
+    padding: 14,
+    gap: 5,
+    marginBottom: 22,
+  },
+  autoFillTitle: { color: Colors.forest, fontSize: 14, fontWeight: "800" },
+  autoFillDescription: { color: Colors.muted, fontSize: 12, lineHeight: 18 },
 });
+
+function getParamString(value: string | string[] | undefined): string {
+  return Array.isArray(value) ? (value[0] ?? "") : (value ?? "");
+}

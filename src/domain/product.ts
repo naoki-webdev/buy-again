@@ -103,9 +103,11 @@ export function filterProducts(
 ): Product[] {
   const normalizedQuery = query.trim().toLocaleLowerCase();
   return products.filter((product) => {
+    const searchableText = [product.name, product.brand, product.barcode ?? ""]
+      .join(" ")
+      .toLocaleLowerCase();
     const matchesQuery =
-      normalizedQuery.length === 0 ||
-      product.name.toLocaleLowerCase().includes(normalizedQuery);
+      normalizedQuery.length === 0 || searchableText.includes(normalizedQuery);
     const matchesRating = rating === "all" || product.rating === rating;
     return matchesQuery && matchesRating;
   });

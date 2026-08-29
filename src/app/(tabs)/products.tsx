@@ -32,7 +32,12 @@ export default function ProductsScreen() {
     <SafeAreaView edges={["top"]} style={styles.root}>
       <View style={styles.content}>
         <AppHeader
-          eyebrow={t("products.item_count", { count: products.length })}
+          eyebrow={t(
+            products.length === 1
+              ? "products.item_count_one"
+              : "products.item_count_other",
+            { count: products.length },
+          )}
           title={t("products.title")}
           action={
             <IconButton
@@ -84,7 +89,12 @@ export default function ProductsScreen() {
           ))}
         </ScrollView>
         <Text style={styles.resultCount}>
-          {t("products.result_count", { count: filtered.length })}
+          {t(
+            filtered.length === 1
+              ? "products.result_count_one"
+              : "products.result_count_other",
+            { count: filtered.length },
+          )}
         </Text>
         <ScrollView
           style={styles.listScroll}

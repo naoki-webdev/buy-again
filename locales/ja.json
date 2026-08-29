@@ -1,0 +1,10 @@
+{
+  "ios": {
+    "CFBundleDisplayName": "buy-again",
+    "NSCameraUsageDescription": "buy-againがバーコードを読み取るためにカメラを使います。",
+    "NSPhotoLibraryUsageDescription": "buy-againが商品写真を登録するために写真へアクセスします。"
+  },
+  "android": {
+    "app_name": "buy-again"
+  }
+}

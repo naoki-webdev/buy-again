@@ -1,7 +1,9 @@
+import Constants from "expo-constants";
+
 const OPEN_FOOD_FACTS_API_URL =
   "https://world.openfoodfacts.org/api/v3/product";
-const OPEN_FOOD_FACTS_USER_AGENT =
-  "buy-again/1.1 (https://github.com/naoki-webdev/buy-again)";
+const APP_VERSION = Constants.expoConfig?.version ?? "1.0.0";
+const OPEN_FOOD_FACTS_USER_AGENT = `buy-again/${APP_VERSION} (https://github.com/naoki-webdev/buy-again)`;
 const REQUEST_TIMEOUT_MS = 7000;
 
 type OpenFoodFactsProductResponse = {
@@ -36,6 +38,7 @@ export async function lookupOpenFoodFactsProduct(
   barcode: string,
   language: ProductLookupLanguage = "en",
   fetcher: OpenFoodFactsFetcher = fetch,
+  signal?: AbortSignal,
 ): Promise<OpenFoodFactsProduct | null> {
   const normalizedBarcode = barcode.trim();
   if (normalizedBarcode.length === 0 || !/^\d+$/.test(normalizedBarcode)) {
@@ -49,7 +52,13 @@ export async function lookupOpenFoodFactsProduct(
       "product_name_ja,product_name,product_name_en,brands,image_front_url,image_url",
   });
   const url = `${OPEN_FOOD_FACTS_API_URL}/${encodeURIComponent(normalizedBarcode)}?${query.toString()}`;
+  if (signal?.aborted) {
+    return null;
+  }
+
   const controller = new AbortController();
+  const abortLookup = () => controller.abort();
+  signal?.addEventListener("abort", abortLookup, { once: true });
   const timeoutId = setTimeout(() => controller.abort(), REQUEST_TIMEOUT_MS);
 
   try {
@@ -74,6 +83,7 @@ export async function lookupOpenFoodFactsProduct(
     return parseProductResponse(payload, language);
   } finally {
     clearTimeout(timeoutId);
+    signal?.removeEventListener("abort", abortLookup);
   }
 }
 

@@ -32,6 +32,7 @@ import { getLocalizedErrorMessage, useTranslation } from "@/i18n";
 import { useProductStore } from "@/store/product-store";
 import { useProductDatabase } from "@/providers/database-provider";
 import { deleteImageUri, persistImageUri } from "@/services/image-storage";
+import { lookupOpenFoodFactsProduct } from "@/services/open-food-facts";
 
 type ProductFormProps = {
   mode: "create" | "edit";
@@ -44,11 +45,12 @@ type ProductFormParams = {
   brand?: string;
   imageUri?: string;
   source?: string;
+  lookup?: string;
 };
 
 export function ProductFormScreen({ mode }: ProductFormProps) {
   const db = useProductDatabase();
-  const { t } = useTranslation();
+  const { language, t } = useTranslation();
   const params = useLocalSearchParams<ProductFormParams>();
   const products = useProductStore((state) => state.products);
   const add = useProductStore((state) => state.add);
@@ -63,8 +65,13 @@ export function ProductFormScreen({ mode }: ProductFormProps) {
   const nameParam = getParamString(params.name);
   const brandParam = getParamString(params.brand);
   const imageUriParam = getParamString(params.imageUri);
-  const isAutoFilled =
+  const hasInitialAutoFill =
     mode === "create" && getParamString(params.source) === "open-food-facts";
+  const shouldLookupExternal =
+    mode === "create" &&
+    getParamString(params.lookup) === "open-food-facts" &&
+    barcodeParam.length > 0;
+  const [lookupLanguage] = useState(language);
   const [draft, setDraft] = useState<ProductDraft>(() =>
     initialProduct
       ? {
@@ -88,7 +95,11 @@ export function ProductFormScreen({ mode }: ProductFormProps) {
   const [isSaving, setIsSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [photoPermissionBlocked, setPhotoPermissionBlocked] = useState(false);
+  const [isExternalLookupFinished, setIsExternalLookupFinished] =
+    useState(!shouldLookupExternal);
+  const [hasAutoFilled, setHasAutoFilled] = useState(hasInitialAutoFill);
   const saveInProgress = useRef(false);
+  const isLookingUpExternal = shouldLookupExternal && !isExternalLookupFinished;
 
   useEffect(() => {
     if (mode === "create" || initialProduct) {
@@ -121,6 +132,51 @@ export function ProductFormScreen({ mode }: ProductFormProps) {
         setIsLoading(false);
       });
   }, [db, getById, initialProduct, mode, productId, t]);
+
+  useEffect(() => {
+    if (!shouldLookupExternal) {
+      return;
+    }
+
+    const controller = new AbortController();
+    let isActive = true;
+
+    void lookupOpenFoodFactsProduct(
+      barcodeParam,
+      lookupLanguage,
+      fetch,
+      controller.signal,
+    )
+      .then((externalProduct) => {
+        if (!isActive || !externalProduct) {
+          return;
+        }
+        setDraft((current) => ({
+          ...current,
+          ...(current.name.trim().length === 0 && externalProduct.productName
+            ? { name: externalProduct.productName }
+            : {}),
+          ...(current.brand.trim().length === 0 && externalProduct.brand
+            ? { brand: externalProduct.brand }
+            : {}),
+          ...(current.imageUri === null && externalProduct.imageUri
+            ? { imageUri: externalProduct.imageUri }
+            : {}),
+        }));
+        setHasAutoFilled(true);
+      })
+      .catch(() => undefined)
+      .finally(() => {
+        if (isActive) {
+          setIsExternalLookupFinished(true);
+        }
+      });
+
+    return () => {
+      isActive = false;
+      controller.abort();
+    };
+  }, [barcodeParam, lookupLanguage, shouldLookupExternal]);
 
   const updateDraft = (changes: Partial<ProductDraft>) =>
     setDraft((current) => ({ ...current, ...changes }));
@@ -172,10 +228,17 @@ export function ProductFormScreen({ mode }: ProductFormProps) {
     let newlyPersistedImageUri: string | null = null;
     let databaseSaveCompleted = false;
     try {
-      const imageUri =
-        draft.imageUri && draft.imageUri !== originalImageUri
-          ? await persistImageUri(draft.imageUri)
-          : draft.imageUri;
+      let imageUri = draft.imageUri;
+      if (draft.imageUri && draft.imageUri !== originalImageUri) {
+        try {
+          imageUri = await persistImageUri(draft.imageUri);
+        } catch (imageError) {
+          if (!isRemoteImageUri(draft.imageUri)) {
+            throw imageError;
+          }
+          imageUri = null;
+        }
+      }
       newlyPersistedImageUri =
         imageUri && imageUri !== draft.imageUri ? imageUri : null;
       const draftToSave = { ...draft, imageUri };
@@ -184,7 +247,7 @@ export function ProductFormScreen({ mode }: ProductFormProps) {
           ? await add(db, draftToSave)
           : await update(db, productId as number, draftToSave);
       databaseSaveCompleted = true;
-      if (newlyPersistedImageUri && originalImageUri) {
+      if (originalImageUri && originalImageUri !== imageUri) {
         await deleteImageUri(originalImageUri).catch(() => undefined);
       }
       router.replace(`/product/${saved.id}`);
@@ -250,7 +313,16 @@ export function ProductFormScreen({ mode }: ProductFormProps) {
             </Text>
           </View>
 
-          {isAutoFilled ? (
+          {isLookingUpExternal ? (
+            <View style={styles.autoFillNotice}>
+              <Text style={styles.autoFillTitle}>{t("form.lookup_title")}</Text>
+              <Text style={styles.autoFillDescription}>
+                {t("form.lookup_description")}
+              </Text>
+            </View>
+          ) : null}
+
+          {hasAutoFilled ? (
             <View style={styles.autoFillNotice}>
               <Text style={styles.autoFillTitle}>
                 {t("form.auto_fill_title")}
@@ -276,13 +348,23 @@ export function ProductFormScreen({ mode }: ProductFormProps) {
                 </Text>
               </View>
             )}
-            <SecondaryButton
-              label={
-                draft.imageUri ? t("form.image_change") : t("form.image_add")
-              }
-              glyph="▧"
-              onPress={() => void pickImage()}
-            />
+            <View style={styles.photoActions}>
+              <SecondaryButton
+                label={
+                  draft.imageUri ? t("form.image_change") : t("form.image_add")
+                }
+                glyph="▧"
+                onPress={() => void pickImage()}
+              />
+              {draft.imageUri ? (
+                <SecondaryButton
+                  label={t("form.image_remove")}
+                  glyph="×"
+                  danger
+                  onPress={() => updateDraft({ imageUri: null })}
+                />
+              ) : null}
+            </View>
           </View>
 
           <View style={styles.formFields}>
@@ -291,7 +373,9 @@ export function ProductFormScreen({ mode }: ProductFormProps) {
               placeholder={t("form.product_name_placeholder")}
               value={draft.name}
               onChangeText={(name) => updateDraft({ name })}
-              autoFocus={mode === "create" && !isAutoFilled}
+              autoFocus={
+                mode === "create" && !hasAutoFilled && !isLookingUpExternal
+              }
             />
             <Field
               label={t("form.barcode")}
@@ -401,6 +485,7 @@ const styles = StyleSheet.create({
     gap: 14,
     marginBottom: 28,
   },
+  photoActions: { flex: 1, gap: 8 },
   photoPreview: { width: 92, height: 92, borderRadius: Radius.md },
   photoPlaceholder: {
     width: 92,
@@ -439,4 +524,8 @@ const styles = StyleSheet.create({
 
 function getParamString(value: string | string[] | undefined): string {
   return Array.isArray(value) ? (value[0] ?? "") : (value ?? "");
+}
+
+function isRemoteImageUri(uri: string): boolean {
+  return uri.startsWith("https://");
 }

@@ -9,7 +9,10 @@
     "userInterfaceStyle": "light",
     "ios": {
       "icon": "./assets/expo.icon",
-      "bundleIdentifier": "com.naokiwebdev.buyagain"
+      "bundleIdentifier": "com.naokiwebdev.buyagain",
+      "infoPlist": {
+        "CFBundleAllowMixedLocalizations": true
+      }
     },
     "android": {
       "package": "com.naokiwebdev.buyagain",
@@ -50,8 +53,20 @@
           "microphonePermission": false
         }
       ],
-      "expo-localization"
+      [
+        "expo-localization",
+        {
+          "supportedLocales": {
+            "ios": ["ja", "en"],
+            "android": ["ja", "en"]
+          }
+        }
+      ]
     ],
+    "locales": {
+      "ja": "./locales/ja.json",
+      "en": "./locales/en.json"
+    },
     "experiments": {
       "typedRoutes": true,
       "reactCompiler": true

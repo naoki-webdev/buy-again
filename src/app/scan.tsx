@@ -4,7 +4,7 @@ import {
   type BarcodeScanningResult,
 } from "expo-camera";
 import { router } from "expo-router";
-import { useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import {
   Linking,
   Pressable,
@@ -20,13 +20,12 @@ import { Colors, Radius, Spacing } from "@/constants/theme";
 import { validateBarcode } from "@/domain/product";
 import { useTranslation } from "@/i18n";
 import { useProductDatabase } from "@/providers/database-provider";
-import { lookupOpenFoodFactsProduct } from "@/services/open-food-facts";
 import { useProductStore } from "@/store/product-store";
 
 export default function ScanScreen() {
   const db = useProductDatabase();
   const insets = useSafeAreaInsets();
-  const { language, t } = useTranslation();
+  const { t } = useTranslation();
   const findByBarcode = useProductStore((state) => state.findByBarcode);
   const [permission, requestPermission] = useCameraPermissions();
   const [manualBarcode, setManualBarcode] = useState("");
@@ -34,6 +33,13 @@ export default function ScanScreen() {
   const [isFinding, setIsFinding] = useState(false);
   const [hasScanned, setHasScanned] = useState(false);
   const lookupInProgress = useRef(false);
+  const screenActive = useRef(true);
+
+  useEffect(() => {
+    return () => {
+      screenActive.current = false;
+    };
+  }, []);
 
   const lookup = async (barcode: string) => {
     const normalizedBarcode = barcode.trim();
@@ -54,41 +60,37 @@ export default function ScanScreen() {
     setError(null);
     try {
       const existing = await findByBarcode(db, normalizedBarcode);
+      if (!screenActive.current) {
+        return;
+      }
       if (existing) {
         router.replace(`/product/${existing.id}`);
       } else {
-        let externalProduct = null;
-        try {
-          externalProduct = await lookupOpenFoodFactsProduct(
-            normalizedBarcode,
-            language,
-          );
-        } catch {
-          externalProduct = null;
-        }
-
         router.replace({
           pathname: "/add",
           params: {
             barcode: normalizedBarcode,
-            ...(externalProduct?.productName
-              ? { name: externalProduct.productName }
-              : {}),
-            ...(externalProduct?.brand ? { brand: externalProduct.brand } : {}),
-            ...(externalProduct?.imageUri
-              ? { imageUri: externalProduct.imageUri }
-              : {}),
-            ...(externalProduct ? { source: "open-food-facts" } : {}),
+            lookup: "open-food-facts",
           },
         });
       }
     } catch {
+      if (!screenActive.current) {
+        return;
+      }
       setHasScanned(false);
       setError(t("errors.lookup_failed"));
     } finally {
       lookupInProgress.current = false;
-      setIsFinding(false);
+      if (screenActive.current) {
+        setIsFinding(false);
+      }
     }
+  };
+
+  const closeScanner = () => {
+    screenActive.current = false;
+    router.back();
   };
 
   const handleBarcodeScanned = ({ data }: BarcodeScanningResult) => {
@@ -140,7 +142,7 @@ export default function ScanScreen() {
           <View style={[styles.overlay, { paddingBottom: insets.bottom + 30 }]}>
             <View style={[styles.scanHeader, { paddingTop: insets.top + 12 }]}>
               <Pressable
-                onPress={() => router.back()}
+                onPress={closeScanner}
                 accessibilityLabel={t("scan.close")}
                 accessibilityRole="button"
                 style={styles.closeButton}

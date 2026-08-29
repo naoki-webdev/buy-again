@@ -43,7 +43,8 @@ describe("Open Food Facts service", () => {
     );
     expect(requestedInit?.headers).toEqual({
       Accept: "application/json",
-      "User-Agent": "buy-again/1.1 (https://github.com/naoki-webdev/buy-again)",
+      "User-Agent":
+        "buy-again/1.0.0 (https://github.com/naoki-webdev/buy-again)",
     });
   });
 
@@ -117,6 +118,26 @@ describe("Open Food Facts service", () => {
       imageUri: null,
     });
     expect(requestedUrl).toContain("lc=en");
+  });
+
+  it("呼び出し元のAbortSignalで検索を中断できる", async () => {
+    const controller = new AbortController();
+    const fetcher: OpenFoodFactsFetcher = async (_url, init) =>
+      new Promise((_resolve, reject) => {
+        init?.signal?.addEventListener("abort", () => {
+          reject(new Error("aborted"));
+        });
+      });
+
+    const lookup = lookupOpenFoodFactsProduct(
+      "4901002182663",
+      "ja",
+      fetcher,
+      controller.signal,
+    );
+    controller.abort();
+
+    await expect(lookup).rejects.toThrow("aborted");
   });
 
   it("数字以外のバーコードは外部検索しない", async () => {

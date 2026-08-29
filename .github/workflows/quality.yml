@@ -23,6 +23,12 @@ jobs:
       - name: Install dependencies
         run: npm ci
 
+      - name: Generate locale data
+        run: npm run generate-locales
+
+      - name: Check generated locale data
+        run: git diff --exit-code -- src/locales/generated.ts
+
       - name: Typecheck
         run: npm run typecheck
 

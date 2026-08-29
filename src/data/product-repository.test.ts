@@ -170,6 +170,19 @@ describe("product repository", () => {
     ).toEqual([1]);
   });
 
+  it("商品名、ブランド、バーコードを検索できる", () => {
+    const product = {
+      ...makeProduct(1, "バターチキンカレー", "buy_again"),
+      brand: "Mandala",
+      barcode: "4901002182663",
+    };
+
+    expect(filterProducts([product], "mandala", "all")).toEqual([product]);
+    expect(filterProducts([product], "4901002182663", "all")).toEqual([
+      product,
+    ]);
+  });
+
   it("同じバーコードの商品登録を拒否する", async () => {
     const db = new FakeProductDatabase();
     await createProduct(db, draft);

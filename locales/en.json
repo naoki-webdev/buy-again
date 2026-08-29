@@ -1,0 +1,10 @@
+{
+  "ios": {
+    "CFBundleDisplayName": "buy-again",
+    "NSCameraUsageDescription": "buy-again uses your camera to scan product barcodes.",
+    "NSPhotoLibraryUsageDescription": "buy-again uses your photo library to add product photos."
+  },
+  "android": {
+    "app_name": "buy-again"
+  }
+}

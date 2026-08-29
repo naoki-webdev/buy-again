@@ -155,6 +155,8 @@ npx expo run:android
 
 EAS Buildで作成する場合は、次のコマンドを実行します。
 
+リポジトリの`eas.json`には、Development Build用の`development`、配布確認用の`preview`、ストア用の`production`プロファイルを定義しています。
+
 ```bash
 npm install --global eas-cli
 eas login

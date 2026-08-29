@@ -1,12 +1,12 @@
 {
   "expo": {
-    "name": "roolet",
-    "slug": "roolet",
+    "name": "buy-again",
+    "slug": "buy-again",
     "version": "1.0.0",
     "orientation": "portrait",
     "icon": "./assets/images/icon.png",
-    "scheme": "roolet",
-    "userInterfaceStyle": "automatic",
+    "scheme": "buy-again",
+    "userInterfaceStyle": "light",
     "ios": {
       "icon": "./assets/expo.icon"
     },
@@ -31,6 +31,21 @@
           "backgroundColor": "#208AEF",
           "image": "./assets/images/splash-icon.png",
           "imageWidth": 76
+        }
+      ],
+      "expo-sqlite",
+      [
+        "expo-camera",
+        {
+          "cameraPermission": "buy-againがバーコードを読み取るためにカメラを使います。",
+          "recordAudioAndroid": false
+        }
+      ],
+      [
+        "expo-image-picker",
+        {
+          "photosPermission": "buy-againが商品写真を登録するために写真へアクセスします。",
+          "microphonePermission": false
         }
       ]
     ],

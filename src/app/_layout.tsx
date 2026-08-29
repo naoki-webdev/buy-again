@@ -1,18 +1,59 @@
-import { DarkTheme, DefaultTheme, ThemeProvider } from 'expo-router';
-import * as SplashScreen from 'expo-splash-screen';
-import { useColorScheme } from 'react-native';
+import { DefaultTheme, Stack, ThemeProvider } from "expo-router";
+import * as SplashScreen from "expo-splash-screen";
+import { StatusBar } from "expo-status-bar";
+import { useEffect } from "react";
 
-import { AnimatedSplashOverlay } from '@/components/animated-icon';
-import AppTabs from '@/components/app-tabs';
+import { DatabaseErrorState } from "@/components/ui";
+import {
+  DatabaseProvider,
+  useProductDatabase,
+} from "@/providers/database-provider";
+import { useProductStore } from "@/store/product-store";
 
 SplashScreen.preventAutoHideAsync();
 
-export default function TabLayout() {
-  const colorScheme = useColorScheme();
+function AppDataLoader() {
+  const db = useProductDatabase();
+  const hydrate = useProductStore((state) => state.hydrate);
+  const isHydrated = useProductStore((state) => state.isHydrated);
+  const error = useProductStore((state) => state.error);
+
+  useEffect(() => {
+    void hydrate(db);
+  }, [db, hydrate]);
+
+  useEffect(() => {
+    if (isHydrated || error) {
+      void SplashScreen.hideAsync();
+    }
+  }, [error, isHydrated]);
+
+  if (error) {
+    return <DatabaseErrorState onRetry={() => void hydrate(db)} />;
+  }
+
+  return null;
+}
+
+export default function RootLayout() {
   return (
-    <ThemeProvider value={colorScheme === 'dark' ? DarkTheme : DefaultTheme}>
-      <AnimatedSplashOverlay />
-      <AppTabs />
+    <ThemeProvider value={DefaultTheme}>
+      <DatabaseProvider>
+        <AppDataLoader />
+        <StatusBar style="dark" />
+        <Stack
+          screenOptions={{
+            headerShown: false,
+            contentStyle: { backgroundColor: "#F7F5EF" },
+          }}
+        >
+          <Stack.Screen name="(tabs)" />
+          <Stack.Screen name="scan" options={{ presentation: "modal" }} />
+          <Stack.Screen name="add" />
+          <Stack.Screen name="product/[id]" />
+          <Stack.Screen name="product/edit/[id]" />
+        </Stack>
+      </DatabaseProvider>
     </ThemeProvider>
   );
 }

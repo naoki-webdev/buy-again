@@ -21,7 +21,12 @@ export type { ProductDatabase, ProductRow } from "@/data/product-repository";
 
 export const DATABASE_VERSION = 2;
 
-export async function migrateDatabase(db: SQLiteDatabase): Promise<void> {
+export type MigrationDatabase = Pick<
+  SQLiteDatabase,
+  "withTransactionAsync" | "getFirstAsync" | "execAsync"
+>;
+
+export async function migrateDatabase(db: MigrationDatabase): Promise<void> {
   await db.withTransactionAsync(async () => {
     const versionRow = await db.getFirstAsync<{ user_version: number }>(
       "PRAGMA user_version",

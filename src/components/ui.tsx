@@ -266,7 +266,7 @@ export function ProductCard({
     <Pressable
       onPress={() => router.push(`/product/${product.id}`)}
       accessibilityRole="button"
-      accessibilityLabel={`${product.name}、${option.label}`}
+      accessibilityLabel={`${product.brand ? `${product.brand}、` : ""}${product.name}、${option.label}`}
       style={({ pressed }) => [
         styles.productCard,
         compact && styles.compactProductCard,
@@ -278,6 +278,11 @@ export function ProductCard({
         <Text numberOfLines={1} style={styles.productName}>
           {product.name}
         </Text>
+        {product.brand ? (
+          <Text numberOfLines={1} style={styles.productBrand}>
+            {product.brand}
+          </Text>
+        ) : null}
         <View style={styles.productMetaRow}>
           <RatingBadge rating={product.rating} />
           {product.barcode ? (
@@ -586,6 +591,7 @@ const styles = StyleSheet.create({
   thumbnailInitial: { fontSize: 24, fontWeight: "800" },
   productCardBody: { flex: 1, gap: 8, minWidth: 0 },
   productName: { color: Colors.ink, fontSize: 16, fontWeight: "700" },
+  productBrand: { color: Colors.muted, fontSize: 12 },
   productMetaRow: { flexDirection: "row", alignItems: "center", gap: 9 },
   barcodeText: {
     color: Colors.muted,

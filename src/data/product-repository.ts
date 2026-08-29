@@ -20,6 +20,7 @@ export type ProductDatabase = {
 export type ProductRow = {
   id: number;
   name: string;
+  brand: string;
   barcode: string | null;
   image_uri: string | null;
   rating: Product["rating"];
@@ -32,6 +33,7 @@ function toProduct(row: ProductRow): Product {
   return {
     id: row.id,
     name: row.name,
+    brand: row.brand,
     barcode: row.barcode,
     imageUri: row.image_uri,
     rating: row.rating,
@@ -84,9 +86,10 @@ export async function createProduct(
   let result: SQLiteRunResult;
   try {
     result = await db.runAsync(
-      `INSERT INTO products (name, barcode, image_uri, rating, note, created_at, updated_at)
-       VALUES (?, ?, ?, ?, ?, ?, ?)`,
+      `INSERT INTO products (name, brand, barcode, image_uri, rating, note, created_at, updated_at)
+       VALUES (?, ?, ?, ?, ?, ?, ?, ?)`,
       draft.name.trim(),
+      draft.brand.trim(),
       barcode || null,
       draft.imageUri,
       draft.rating,
@@ -115,9 +118,10 @@ export async function updateProduct(
   try {
     await db.runAsync(
       `UPDATE products
-       SET name = ?, barcode = ?, image_uri = ?, rating = ?, note = ?, updated_at = ?
+       SET name = ?, brand = ?, barcode = ?, image_uri = ?, rating = ?, note = ?, updated_at = ?
        WHERE id = ?`,
       draft.name.trim(),
+      draft.brand.trim(),
       barcode || null,
       draft.imageUri,
       draft.rating,

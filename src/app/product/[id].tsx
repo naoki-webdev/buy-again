@@ -135,6 +135,9 @@ export default function ProductDetailScreen() {
             </View>
           )}
           <Text style={styles.productName}>{product.name}</Text>
+          {product.brand ? (
+            <Text style={styles.brand}>{product.brand}</Text>
+          ) : null}
           {product.barcode ? (
             <Text style={styles.barcode}>{product.barcode}</Text>
           ) : null}
@@ -241,6 +244,7 @@ const styles = StyleSheet.create({
     textAlign: "center",
     letterSpacing: -0.8,
   },
+  brand: { color: Colors.muted, fontSize: 14, fontWeight: "600" },
   barcode: {
     color: Colors.muted,
     fontSize: 12,

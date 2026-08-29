@@ -40,6 +40,7 @@ type ProductFormParams = {
   id?: string;
   barcode?: string;
   name?: string;
+  brand?: string;
   imageUri?: string;
   source?: string;
 };
@@ -58,6 +59,7 @@ export function ProductFormScreen({ mode }: ProductFormProps) {
   const originalImageUri = sourceProduct?.imageUri ?? null;
   const barcodeParam = getParamString(params.barcode);
   const nameParam = getParamString(params.name);
+  const brandParam = getParamString(params.brand);
   const imageUriParam = getParamString(params.imageUri);
   const isAutoFilled =
     mode === "create" && getParamString(params.source) === "open-food-facts";
@@ -65,6 +67,7 @@ export function ProductFormScreen({ mode }: ProductFormProps) {
     initialProduct
       ? {
           name: initialProduct.name,
+          brand: initialProduct.brand,
           barcode: initialProduct.barcode ?? "",
           imageUri: initialProduct.imageUri,
           rating: initialProduct.rating,
@@ -73,6 +76,7 @@ export function ProductFormScreen({ mode }: ProductFormProps) {
       : {
           ...createEmptyDraft(barcodeParam),
           name: nameParam,
+          brand: brandParam,
           imageUri: imageUriParam || null,
         },
   );
@@ -99,6 +103,7 @@ export function ProductFormScreen({ mode }: ProductFormProps) {
           setLoadedProduct(existingProduct);
           setDraft({
             name: existingProduct.name,
+            brand: existingProduct.brand,
             barcode: existingProduct.barcode ?? "",
             imageUri: existingProduct.imageUri,
             rating: existingProduct.rating,
@@ -285,6 +290,13 @@ export function ProductFormScreen({ mode }: ProductFormProps) {
               value={draft.barcode}
               onChangeText={(barcode) => updateDraft({ barcode })}
               keyboardType="number-pad"
+            />
+            <Field
+              label="ブランド"
+              hint="任意"
+              placeholder="例：メーカー名"
+              value={draft.brand}
+              onChangeText={(brand) => updateDraft({ brand })}
             />
             <View style={styles.ratingSection}>
               <Text style={styles.fieldLabel}>評価</Text>

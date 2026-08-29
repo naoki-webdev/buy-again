@@ -19,10 +19,7 @@ import { ErrorText, PrimaryButton } from "@/components/ui";
 import { Colors, Radius, Spacing } from "@/constants/theme";
 import { validateBarcode } from "@/domain/product";
 import { useProductDatabase } from "@/providers/database-provider";
-import {
-  buildSuggestedProductName,
-  lookupOpenFoodFactsProduct,
-} from "@/services/open-food-facts";
+import { lookupOpenFoodFactsProduct } from "@/services/open-food-facts";
 import { useProductStore } from "@/store/product-store";
 
 export default function ScanScreen() {
@@ -65,17 +62,14 @@ export default function ScanScreen() {
           externalProduct = null;
         }
 
-        const suggestedName = externalProduct
-          ? buildSuggestedProductName(
-              externalProduct.productName,
-              externalProduct.brand,
-            )
-          : "";
         router.replace({
           pathname: "/add",
           params: {
             barcode: normalizedBarcode,
-            ...(suggestedName ? { name: suggestedName } : {}),
+            ...(externalProduct?.productName
+              ? { name: externalProduct.productName }
+              : {}),
+            ...(externalProduct?.brand ? { brand: externalProduct.brand } : {}),
             ...(externalProduct?.imageUri
               ? { imageUri: externalProduct.imageUri }
               : {}),

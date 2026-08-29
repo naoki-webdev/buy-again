@@ -5,7 +5,9 @@ const OPEN_FOOD_FACTS_USER_AGENT =
 const REQUEST_TIMEOUT_MS = 7000;
 
 type OpenFoodFactsProductResponse = {
+  product_name_ja?: unknown;
   product_name?: unknown;
+  product_name_en?: unknown;
   brands?: unknown;
   image_front_url?: unknown;
   image_url?: unknown;
@@ -40,7 +42,8 @@ export async function lookupOpenFoodFactsProduct(
   const query = new URLSearchParams({
     product_type: "food",
     lc: "ja",
-    fields: "product_name,brands,image_front_url,image_url",
+    fields:
+      "product_name_ja,product_name,product_name_en,brands,image_front_url,image_url",
   });
   const url = `${OPEN_FOOD_FACTS_API_URL}/${encodeURIComponent(normalizedBarcode)}?${query.toString()}`;
   const controller = new AbortController();
@@ -71,32 +74,6 @@ export async function lookupOpenFoodFactsProduct(
   }
 }
 
-export function buildSuggestedProductName(
-  productName: string | null,
-  brand: string | null,
-): string {
-  const normalizedProductName = normalizeText(productName);
-  const normalizedBrand = normalizeText(brand)?.split(",")[0]?.trim() ?? "";
-
-  if (!normalizedProductName) {
-    return normalizedBrand.slice(0, 120);
-  }
-  if (!normalizedBrand) {
-    return normalizedProductName.slice(0, 120);
-  }
-
-  const lowerProductName = normalizedProductName.toLocaleLowerCase();
-  const lowerBrand = normalizedBrand.toLocaleLowerCase();
-  if (
-    lowerProductName === lowerBrand ||
-    lowerProductName.startsWith(`${lowerBrand} `)
-  ) {
-    return normalizedProductName.slice(0, 120);
-  }
-
-  return `${normalizedBrand} ${normalizedProductName}`.slice(0, 120).trim();
-}
-
 function parseProductResponse(payload: unknown): OpenFoodFactsProduct | null {
   if (!isRecord(payload)) {
     return null;
@@ -114,7 +91,7 @@ function parseProductResponse(payload: unknown): OpenFoodFactsProduct | null {
     return null;
   }
 
-  const productName = normalizeText(product.product_name);
+  const productName = selectProductName(product);
   const brand = normalizeText(product.brands);
   const imageUri = normalizeImageUri(
     product.image_front_url ?? product.image_url,
@@ -124,6 +101,16 @@ function parseProductResponse(payload: unknown): OpenFoodFactsProduct | null {
   }
 
   return { productName, brand, imageUri };
+}
+
+function selectProductName(
+  product: OpenFoodFactsProductResponse,
+): string | null {
+  return (
+    normalizeText(product.product_name_ja) ??
+    normalizeText(product.product_name) ??
+    normalizeText(product.product_name_en)
+  );
 }
 
 function normalizeText(value: unknown): string | null {

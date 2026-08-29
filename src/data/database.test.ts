@@ -13,6 +13,7 @@ import {
 type LegacyProduct = {
   id: number;
   barcode: string | null;
+  brand?: string;
 };
 
 class MigrationDatabaseStub implements MigrationDatabase {
@@ -23,6 +24,7 @@ class MigrationDatabaseStub implements MigrationDatabase {
     { id: 3, barcode: "4900000000002" },
   ];
   private hasUniqueBarcodeIndex = false;
+  private hasBrandColumn = false;
 
   async withTransactionAsync(task: () => Promise<void>): Promise<void> {
     await task();
@@ -72,6 +74,11 @@ class MigrationDatabaseStub implements MigrationDatabase {
       this.hasUniqueBarcodeIndex = true;
     }
 
+    if (source.includes("ADD COLUMN brand")) {
+      this.hasBrandColumn = true;
+      this.rows = this.rows.map((row) => ({ ...row, brand: "" }));
+    }
+
     if (source.includes("PRAGMA user_version =")) {
       this.version = DATABASE_VERSION;
     }
@@ -83,6 +90,10 @@ class MigrationDatabaseStub implements MigrationDatabase {
 
   getVersion(): number {
     return this.version;
+  }
+
+  hasBrand(): boolean {
+    return this.hasBrandColumn;
   }
 
   insertBarcode(barcode: string): void {
@@ -97,12 +108,14 @@ class MigrationDatabaseStub implements MigrationDatabase {
 }
 
 describe("database migration", () => {
-  it("v1の重複バーコードを整理してv2の一意制約を有効にする", async () => {
+  it("v1の重複バーコードを整理してv3のブランド列と一意制約を有効にする", async () => {
     const db = new MigrationDatabaseStub();
 
     await migrateDatabase(db);
 
     expect(db.getVersion()).toBe(DATABASE_VERSION);
+    expect(db.hasBrand()).toBe(true);
+    expect(db.getProduct(1)?.brand).toBe("");
     expect(db.getProduct(1)?.barcode).toBeNull();
     expect(db.getProduct(2)?.barcode).toBe("4900000000001");
     expect(db.getProduct(3)?.barcode).toBe("4900000000002");

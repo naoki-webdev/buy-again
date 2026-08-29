@@ -25,11 +25,20 @@ class FakeProductDatabase implements ProductDatabase {
   ): Promise<SQLiteRunResult> {
     if (source.includes("INSERT INTO products")) {
       const id = this.nextId++;
-      const [name, barcode, imageUri, rating, note, createdAt, updatedAt] =
-        params;
+      const [
+        name,
+        brand,
+        barcode,
+        imageUri,
+        rating,
+        note,
+        createdAt,
+        updatedAt,
+      ] = params;
       this.rows.set(id, {
         id,
         name: asString(name),
+        brand: asString(brand),
         barcode: asNullableString(barcode),
         image_uri: asNullableString(imageUri),
         rating: asRating(rating),
@@ -41,7 +50,7 @@ class FakeProductDatabase implements ProductDatabase {
     }
 
     if (source.includes("UPDATE products")) {
-      const [name, barcode, imageUri, rating, note, updatedAt, idValue] =
+      const [name, brand, barcode, imageUri, rating, note, updatedAt, idValue] =
         params;
       const id = asNumber(idValue);
       const current = this.rows.get(id);
@@ -49,6 +58,7 @@ class FakeProductDatabase implements ProductDatabase {
         this.rows.set(id, {
           ...current,
           name: asString(name),
+          brand: asString(brand),
           barcode: asNullableString(barcode),
           image_uri: asNullableString(imageUri),
           rating: asRating(rating),
@@ -92,6 +102,7 @@ class FakeProductDatabase implements ProductDatabase {
 
 const draft: ProductDraft = {
   name: "試す商品",
+  brand: "試すブランド",
   barcode: "4900000000001",
   imageUri: null,
   rating: "buy_again",
@@ -104,6 +115,7 @@ describe("product repository", () => {
     const created = await createProduct(db, draft);
 
     expect(created.name).toBe("試す商品");
+    expect(created.brand).toBe("試すブランド");
     expect(created.barcode).toBe("4900000000001");
     expect(created.rating).toBe("buy_again");
   });
@@ -115,9 +127,11 @@ describe("product repository", () => {
     const updated = await updateProduct(db, created.id, {
       ...draft,
       name: "編集した商品",
+      brand: "編集したブランド",
       rating: "maybe",
     });
     expect(updated.name).toBe("編集した商品");
+    expect(updated.brand).toBe("編集したブランド");
     expect(updated.rating).toBe("maybe");
   });
 
@@ -188,6 +202,7 @@ function makeProduct(
   return {
     id,
     name,
+    brand: "",
     barcode: null,
     imageUri: null,
     rating,

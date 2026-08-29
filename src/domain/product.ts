@@ -3,6 +3,7 @@ export type Rating = "buy_again" | "buy_if_cheap" | "maybe" | "never_again";
 export type Product = {
   id: number;
   name: string;
+  brand: string;
   barcode: string | null;
   imageUri: string | null;
   rating: Rating;
@@ -13,6 +14,7 @@ export type Product = {
 
 export type ProductDraft = {
   name: string;
+  brand: string;
   barcode: string;
   imageUri: string | null;
   rating: Rating;
@@ -105,6 +107,7 @@ export function filterProducts(
 export function createEmptyDraft(barcode = ""): ProductDraft {
   return {
     name: "",
+    brand: "",
     barcode,
     imageUri: null,
     rating: "buy_again",

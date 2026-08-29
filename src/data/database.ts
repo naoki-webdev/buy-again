@@ -19,7 +19,7 @@ export {
 };
 export type { ProductDatabase, ProductRow } from "@/data/product-repository";
 
-export const DATABASE_VERSION = 2;
+export const DATABASE_VERSION = 3;
 
 export type MigrationDatabase = Pick<
   SQLiteDatabase,
@@ -69,6 +69,12 @@ export async function migrateDatabase(db: MigrationDatabase): Promise<void> {
         CREATE UNIQUE INDEX IF NOT EXISTS idx_products_barcode_unique
           ON products(barcode)
           WHERE barcode IS NOT NULL;
+      `);
+    }
+
+    if (currentVersion < 3) {
+      await db.execAsync(`
+        ALTER TABLE products ADD COLUMN brand TEXT NOT NULL DEFAULT '';
       `);
     }
 

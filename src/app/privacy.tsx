@@ -18,7 +18,6 @@ export default function PrivacyScreen() {
   return (
     <Screen scroll style={styles.content}>
       <AppHeader
-        eyebrow={t("privacy.eyebrow")}
         title={t("privacy.title")}
         action={
           <IconButton

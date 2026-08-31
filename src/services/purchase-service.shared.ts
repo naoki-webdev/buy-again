@@ -4,9 +4,22 @@ import type { TranslationKey } from "@/locales/types";
 
 export const MAX_FREE_PRODUCTS = 20;
 
-export const PURCHASE_PRODUCT_IDS = {
-  unlock: "com.naokiwebdev.buyagain.unlock",
+export const PURCHASE_PRODUCT_IDS_BY_ENV = {
+  test: {
+    unlock: "com.naokiwebdev.buyagain.unlock.test",
+  },
+  production: {
+    unlock: "com.naokiwebdev.buyagain.unlock",
+  },
 } as const;
+
+export type PurchaseEnvironment = keyof typeof PURCHASE_PRODUCT_IDS_BY_ENV;
+
+export const PURCHASE_ENVIRONMENT: PurchaseEnvironment =
+  process.env.EXPO_PUBLIC_IAP_ENV === "production" ? "production" : "test";
+
+export const PURCHASE_PRODUCT_IDS =
+  PURCHASE_PRODUCT_IDS_BY_ENV[PURCHASE_ENVIRONMENT];
 
 export type PurchaseContextValue = {
   isAvailable: boolean;

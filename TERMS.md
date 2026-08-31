@@ -40,6 +40,6 @@
 
 ## 8. お問い合わせ
 
-開発者：［公開する開発者名または事業者名に置き換えてください］
+開発者：naoki-webdev
 
-お問い合わせ：privacy@example.com
+お問い合わせ：https://github.com/naoki-webdev/buy-again/issues

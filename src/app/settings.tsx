@@ -34,7 +34,6 @@ export default function SettingsScreen() {
   return (
     <Screen scroll style={styles.content}>
       <AppHeader
-        eyebrow={t("settings.eyebrow")}
         title={t("settings.title")}
         action={
           <IconButton

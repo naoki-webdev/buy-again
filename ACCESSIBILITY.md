@@ -6,4 +6,4 @@ buy-againは、VoiceOverとTalkBackで操作しやすい画面、文字サイズ
 
 本方針ではWCAG 2.2 AAを参照していますが、本アプリが同基準に完全準拠していることを表明するものではありません。端末、OS、支援技術、画面サイズによって利用しやすさが変わる場合があります。
 
-利用上の問題や改善提案は、privacy@example.comまでお知らせください。
+利用上の問題や改善提案は、https://github.com/naoki-webdev/buy-again/issues までお知らせください。

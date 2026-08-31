@@ -43,8 +43,8 @@ home:
   first_add: "Add your first product"
 
 products:
-  item_count_one: "1 ITEM"
-  item_count_other: "{count} ITEMS"
+  item_count_one: "1 item"
+  item_count_other: "{count} items"
   title: "Products"
   add_label: "Add a product"
   search_placeholder: "Search name, brand, or barcode"
@@ -67,7 +67,6 @@ scan:
   close: "Close scanner"
   title: "Scan a barcode"
   helper: "Align a JAN, EAN, or UPC barcode inside the frame"
-  manual_eyebrow: "CAMERA NOT HANDY?"
   manual_title: "Enter the number"
   barcode_placeholder: "Barcode number"
   search: "Search barcode"
@@ -77,8 +76,6 @@ form:
   loading: "Loading product…"
   create_title: "Add product"
   edit_title: "Edit product"
-  create_kicker: "NEW MEMORY"
-  edit_kicker: "UPDATE MEMORY"
   create_heading: "Leave a note for your future self."
   edit_heading: "Keep the record current."
   create_description: "You can change the rating later. Save how it feels today."
@@ -144,7 +141,6 @@ database:
   load_failed_description: "If restarting the app does not help, check the available storage on your device."
 
 settings:
-  eyebrow: "PREFERENCES"
   title: "Settings"
   language_title: "App language"
   language_description: "Choose the language used by the app. System uses your device language."
@@ -187,7 +183,6 @@ purchase:
   store_unavailable: "Could not connect to the purchase store."
 
 terms:
-  eyebrow: "TERMS"
   title: "Terms of use"
   intro: "buy-again is a personal memo app for recording impressions of products you bought."
   use_title: "Service scope"
@@ -205,10 +200,9 @@ terms:
   law_title: "Governing law and jurisdiction"
   law_body: "These terms are governed by the laws of Japan. Disputes are handled by the court with jurisdiction under applicable law."
   contact_title: "Contact"
-  contact_body: "Developer: [Replace with the public developer or business name]\nContact: privacy@example.com"
+  contact_body: "Developer: naoki-webdev\nContact: https://github.com/naoki-webdev/buy-again/issues"
 
 accessibility:
-  eyebrow: "ACCESSIBILITY"
   title: "Accessibility"
   intro: "We continue improving screens for VoiceOver and TalkBack, larger text sizes, and layouts that remain understandable across screen sizes."
   interaction_title: "Interaction and display"
@@ -218,10 +212,9 @@ accessibility:
   standard_title: "Reference standard"
   standard_body: "WCAG 2.2 AA is used as a reference. This is not a claim that the app fully conforms to that standard."
   contact_title: "Contact"
-  contact_body: "Please send accessibility issues or suggestions to privacy@example.com."
+  contact_body: "Please send accessibility issues or suggestions to https://github.com/naoki-webdev/buy-again/issues."
 
 privacy:
-  eyebrow: "PRIVACY"
   title: "Privacy and data"
   intro: "buy-again is a personal app for keeping shopping memories on your device."
   local_title: "Information stored on this device"
@@ -239,7 +232,7 @@ privacy:
   purchase_title: "App Store and Google Play purchases"
   purchase_body: "If you use the one-time unlock, Apple or Google processes the payment information. The buy-again developer does not receive card details. The app uses purchase information provided by the stores to check the unlock state. The stores' privacy policies and terms apply to purchases, refunds, and billing history."
   contact_title: "Developer information and contact"
-  contact_body: "Developer: [Replace with the public developer or business name]\nPrivacy inquiries: privacy@example.com"
+  contact_body: "Developer: naoki-webdev\nPrivacy inquiries: https://github.com/naoki-webdev/buy-again/issues"
   off_link: "Open the Open Food Facts site"
 
 messages:

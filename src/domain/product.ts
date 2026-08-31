@@ -1,4 +1,5 @@
 import type { TranslationKey } from "@/locales/types";
+import { Colors } from "@/constants/theme";
 
 export type Rating = "buy_again" | "buy_if_cheap" | "maybe" | "never_again";
 
@@ -47,28 +48,28 @@ export const RATING_OPTIONS: readonly RatingOption[] = [
     value: "buy_again",
     labelKey: "rating.buy_again.label",
     shortLabelKey: "rating.buy_again.short",
-    color: "#285243",
+    color: Colors.forest,
     backgroundColor: "#DCE8E0",
   },
   {
     value: "buy_if_cheap",
     labelKey: "rating.buy_if_cheap.label",
     shortLabelKey: "rating.buy_if_cheap.short",
-    color: "#C68B35",
+    color: Colors.amber,
     backgroundColor: "#F8ECCC",
   },
   {
     value: "maybe",
     labelKey: "rating.maybe.label",
     shortLabelKey: "rating.maybe.short",
-    color: "#60706B",
+    color: Colors.slate,
     backgroundColor: "#E3E8E4",
   },
   {
     value: "never_again",
     labelKey: "rating.never_again.label",
     shortLabelKey: "rating.never_again.short",
-    color: "#B9534C",
+    color: Colors.danger,
     backgroundColor: "#F5E0D8",
   },
 ];

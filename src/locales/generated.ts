@@ -50,8 +50,8 @@ export const translations = {
       first_add: "最初の商品を登録",
     },
     products: {
-      item_count_one: "1 ITEM",
-      item_count_other: "{count} ITEMS",
+      item_count_one: "1件",
+      item_count_other: "{count}件",
       title: "商品一覧",
       add_label: "商品を登録する",
       search_placeholder: "商品名・ブランド・バーコードで検索",
@@ -76,7 +76,6 @@ export const translations = {
       close: "スキャンを閉じる",
       title: "バーコードをスキャン",
       helper: "JAN、EAN、UPCバーコードを枠の中に合わせてください",
-      manual_eyebrow: "CAMERA NOT HANDY?",
       manual_title: "番号を直接入力",
       barcode_placeholder: "バーコード番号",
       search: "バーコードを検索",
@@ -86,8 +85,6 @@ export const translations = {
       loading: "商品を読み込んでいます…",
       create_title: "商品を登録",
       edit_title: "商品を編集",
-      create_kicker: "NEW MEMORY",
-      edit_kicker: "UPDATE MEMORY",
       create_heading: "次の自分へ、ひとこと。",
       edit_heading: "記録を整える。",
       create_description:
@@ -159,7 +156,6 @@ export const translations = {
         "アプリを再起動しても改善しない場合は、端末の空き容量を確認してください。",
     },
     settings: {
-      eyebrow: "PREFERENCES",
       title: "設定",
       language_title: "表示言語",
       language_description:
@@ -212,7 +208,6 @@ export const translations = {
       store_unavailable: "購入ストアに接続できませんでした。",
     },
     terms: {
-      eyebrow: "TERMS",
       title: "利用規約",
       intro: "buy-againは、購入した商品の印象を記録する個人用メモアプリです。",
       use_title: "サービスの性質",
@@ -238,10 +233,9 @@ export const translations = {
         "本規約は日本法に準拠します。紛争は、適用法令が定める管轄裁判所によって解決します。",
       contact_title: "お問い合わせ",
       contact_body:
-        "開発者：［公開する開発者名または事業者名に置き換えてください］\nお問い合わせ：privacy@example.com",
+        "開発者：naoki-webdev\nお問い合わせ：https://github.com/naoki-webdev/buy-again/issues",
     },
     accessibility: {
-      eyebrow: "ACCESSIBILITY",
       title: "アクセシビリティ",
       intro:
         "VoiceOverとTalkBackで操作しやすい画面、文字サイズを大きくした場合にも確認しやすいレイアウトを目指して改善しています。",
@@ -256,10 +250,9 @@ export const translations = {
         "WCAG 2.2 AAを参照していますが、本アプリが同基準に完全準拠していることを表明するものではありません。",
       contact_title: "お問い合わせ",
       contact_body:
-        "利用上の問題や改善提案はprivacy@example.comまでお知らせください。",
+        "利用上の問題や改善提案はhttps://github.com/naoki-webdev/buy-again/issuesまでお知らせください。",
     },
     privacy: {
-      eyebrow: "PRIVACY",
       title: "プライバシーとデータ",
       intro:
         "buy-againは、買った商品の記録を端末内で管理する個人用アプリです。",
@@ -286,7 +279,7 @@ export const translations = {
         "買い切りアンロックを利用する場合、決済情報はAppleまたはGoogleが処理します。buy-againの開発者はカード情報を取得しません。購入状態の確認には、各ストアが提供する購入情報をアプリが利用します。購入、返金、請求履歴には各ストアのプライバシーポリシーと利用規約が適用されます。",
       contact_title: "開発者情報とお問い合わせ",
       contact_body:
-        "開発者：［公開する開発者名または事業者名に置き換えてください］\nプライバシーに関するお問い合わせ：privacy@example.com",
+        "開発者：naoki-webdev\nプライバシーに関するお問い合わせ：https://github.com/naoki-webdev/buy-again/issues",
       off_link: "Open Food Factsのサイトを開く",
     },
     messages: {
@@ -345,8 +338,8 @@ export const translations = {
       first_add: "Add your first product",
     },
     products: {
-      item_count_one: "1 ITEM",
-      item_count_other: "{count} ITEMS",
+      item_count_one: "1 item",
+      item_count_other: "{count} items",
       title: "Products",
       add_label: "Add a product",
       search_placeholder: "Search name, brand, or barcode",
@@ -369,7 +362,6 @@ export const translations = {
       close: "Close scanner",
       title: "Scan a barcode",
       helper: "Align a JAN, EAN, or UPC barcode inside the frame",
-      manual_eyebrow: "CAMERA NOT HANDY?",
       manual_title: "Enter the number",
       barcode_placeholder: "Barcode number",
       search: "Search barcode",
@@ -379,8 +371,6 @@ export const translations = {
       loading: "Loading product…",
       create_title: "Add product",
       edit_title: "Edit product",
-      create_kicker: "NEW MEMORY",
-      edit_kicker: "UPDATE MEMORY",
       create_heading: "Leave a note for your future self.",
       edit_heading: "Keep the record current.",
       create_description:
@@ -453,7 +443,6 @@ export const translations = {
         "If restarting the app does not help, check the available storage on your device.",
     },
     settings: {
-      eyebrow: "PREFERENCES",
       title: "Settings",
       language_title: "App language",
       language_description:
@@ -506,7 +495,6 @@ export const translations = {
       store_unavailable: "Could not connect to the purchase store.",
     },
     terms: {
-      eyebrow: "TERMS",
       title: "Terms of use",
       intro:
         "buy-again is a personal memo app for recording impressions of products you bought.",
@@ -533,10 +521,9 @@ export const translations = {
         "These terms are governed by the laws of Japan. Disputes are handled by the court with jurisdiction under applicable law.",
       contact_title: "Contact",
       contact_body:
-        "Developer: [Replace with the public developer or business name]\nContact: privacy@example.com",
+        "Developer: naoki-webdev\nContact: https://github.com/naoki-webdev/buy-again/issues",
     },
     accessibility: {
-      eyebrow: "ACCESSIBILITY",
       title: "Accessibility",
       intro:
         "We continue improving screens for VoiceOver and TalkBack, larger text sizes, and layouts that remain understandable across screen sizes.",
@@ -551,10 +538,9 @@ export const translations = {
         "WCAG 2.2 AA is used as a reference. This is not a claim that the app fully conforms to that standard.",
       contact_title: "Contact",
       contact_body:
-        "Please send accessibility issues or suggestions to privacy@example.com.",
+        "Please send accessibility issues or suggestions to https://github.com/naoki-webdev/buy-again/issues.",
     },
     privacy: {
-      eyebrow: "PRIVACY",
       title: "Privacy and data",
       intro:
         "buy-again is a personal app for keeping shopping memories on your device.",
@@ -581,7 +567,7 @@ export const translations = {
         "If you use the one-time unlock, Apple or Google processes the payment information. The buy-again developer does not receive card details. The app uses purchase information provided by the stores to check the unlock state. The stores' privacy policies and terms apply to purchases, refunds, and billing history.",
       contact_title: "Developer information and contact",
       contact_body:
-        "Developer: [Replace with the public developer or business name]\nPrivacy inquiries: privacy@example.com",
+        "Developer: naoki-webdev\nPrivacy inquiries: https://github.com/naoki-webdev/buy-again/issues",
       off_link: "Open the Open Food Facts site",
     },
     messages: {

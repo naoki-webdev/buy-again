@@ -4,6 +4,8 @@ import {
   isPurchaseCancelled,
   isUnlockProduct,
   MAX_FREE_PRODUCTS,
+  PURCHASE_ENVIRONMENT,
+  PURCHASE_PRODUCT_IDS_BY_ENV,
   PURCHASE_PRODUCT_IDS,
 } from "@/services/purchase-service.shared";
 
@@ -30,5 +32,17 @@ describe("purchase entitlement rules", () => {
     expect(getPurchaseErrorKey("purchase")).toBe("purchase.purchase_failed");
     expect(getPurchaseErrorKey("restore")).toBe("purchase.restore_failed");
     expect(getPurchaseErrorKey("store")).toBe("purchase.store_unavailable");
+  });
+
+  it("テスト用と本番用の商品IDを分離する", () => {
+    expect(PURCHASE_PRODUCT_IDS_BY_ENV.test.unlock).toBe(
+      "com.naokiwebdev.buyagain.unlock.test",
+    );
+    expect(PURCHASE_PRODUCT_IDS_BY_ENV.production.unlock).toBe(
+      "com.naokiwebdev.buyagain.unlock",
+    );
+    expect(PURCHASE_PRODUCT_IDS.unlock).toBe(
+      PURCHASE_PRODUCT_IDS_BY_ENV[PURCHASE_ENVIRONMENT].unlock,
+    );
   });
 });

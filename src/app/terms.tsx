@@ -11,7 +11,6 @@ export default function TermsScreen() {
   return (
     <Screen scroll style={styles.content}>
       <AppHeader
-        eyebrow={t("terms.eyebrow")}
         title={t("terms.title")}
         action={
           <IconButton

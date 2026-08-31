@@ -168,7 +168,6 @@ export default function ScanScreen() {
       <View style={[styles.manualArea, { paddingBottom: insets.bottom + 24 }]}>
         <View style={styles.manualHeading}>
           <View>
-            <Text style={styles.manualEyebrow}>{t("scan.manual_eyebrow")}</Text>
             <Text style={styles.manualTitle}>{t("scan.manual_title")}</Text>
           </View>
           <Text style={styles.manualArrow}>↓</Text>
@@ -325,13 +324,6 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     alignItems: "center",
     justifyContent: "space-between",
-  },
-  manualEyebrow: {
-    color: Colors.coral,
-    fontSize: 10,
-    letterSpacing: 1.2,
-    fontWeight: "800",
-    marginBottom: 5,
   },
   manualTitle: { color: Colors.ink, fontSize: 20, fontWeight: "800" },
   manualArrow: { color: Colors.forest, fontSize: 22 },

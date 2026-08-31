@@ -63,7 +63,7 @@ Open Food Factsの画像を端末へ保存できない場合は、写真なし�
 
 購入はiOSの非消耗型In-App PurchaseとAndroidの買い切り型ワンタイム商品として提供します。価格はApp StoreまたはGoogle Playから取得した表示価格を使い、購入状態はストアの購入情報から判断します。AsyncStorageなどに購入済みフラグだけを保存しません。
 
-商品IDは`src/services/purchase-service.shared.ts`の`PURCHASE_PRODUCT_IDS`で管理しています。App Store ConnectとGoogle Play Consoleには同じ用途の本番商品を登録し、Development Buildではテスト商品を設定してください。
+商品IDは`src/services/purchase-service.shared.ts`の`PURCHASE_PRODUCT_IDS_BY_ENV`で環境別に管理しています。Development / Preview Buildはテスト商品、Production Buildは本番商品を参照します。EASプロファイルの`EXPO_PUBLIC_IAP_ENV`で切り替えます。
 
 IAPはExpo Goでは利用できません。購入確認には対応するDevelopment Buildまたはストア用実機ビルドが必要です。購入処理ではストアの確認後に非消耗型トランザクションを完了し、キャンセル時はエラー表示を出しません。
 
@@ -79,7 +79,7 @@ IAPはExpo Goでは利用できません。購入確認には対応するDevelop
 
 詳細は[PRIVACY.md](PRIVACY.md)に記載しています。
 
-利用条件は[TERMS.md](TERMS.md)、アクセシビリティ方針は[ACCESSIBILITY.md](ACCESSIBILITY.md)に記載しています。ストア公開時には、開発者名、問い合わせ先、公開HTTPS URLを実際の情報へ置き換えてください。
+利用条件は[TERMS.md](TERMS.md)、アクセシビリティ方針は[ACCESSIBILITY.md](ACCESSIBILITY.md)に記載しています。開発者名は`naoki-webdev`、問い合わせ先はGitHub Issuesを設定しています。ストア公開時には、Privacy Policy、Terms、Accessibilityの公開HTTPS URLを登録してください。
 
 ## 品質確認で反映した内容
 
@@ -116,7 +116,7 @@ IAPはExpo Goでは利用できません。購入確認には対応するDevelop
 
 単体テストは、ドメイン、Repository、migration、Open Food Facts、表示言語のロジックを対象にしています。
 
-現在は11スイート、57テストケースです。内訳は、Repository、migration、Webデータ検証、ドメイン、Store、Open Food Facts、画像保存、画像選択、i18n、翻訳キー、購入ルールです。
+現在は12スイート、62テストケースです。内訳は、Repository、migration、Webデータ検証、ドメイン、Store、Open Food Facts、画像保存、画像選択、i18n、翻訳キー、購入ルール、ネイティブ購入Providerです。
 
 IAPのネイティブストア処理は、ストアのテスト環境と実機で確認します。単体テストでは、20件制限、買い切り商品ID、キャンセル、復元・購入失敗の表示キーを検証します。
 
@@ -286,11 +286,12 @@ Expo Goで確認した項目も、公開前にはAndroid Development Buildで再
 
 ストア側に次の商品を作成します。
 
-- 商品ID：`com.naokiwebdev.buyagain.unlock`
+- テスト商品ID：`com.naokiwebdev.buyagain.unlock.test`
+- 本番商品ID：`com.naokiwebdev.buyagain.unlock`
 - iOS：非消耗型In-App Purchase
 - Android：買い切り型のワンタイム商品
 
-ストア審査用の本番商品と、Development Buildで使うテスト商品を各ストアで設定してください。`expo-iap`はExpo Goに含まれないため、課金フローは物理端末のDevelopment Buildで確認します。価格表示、購入完了、キャンセル、復元、既購入状態、ストア接続失敗を確認してから提出版を固定します。
+ストア審査用の本番商品と、Development / Preview Buildで使うテスト商品を各ストアで別々に設定してください。`expo-iap`はExpo Goに含まれないため、課金フローは物理端末のDevelopment Buildで確認します。価格表示、購入完了、キャンセル、復元、既購入状態、ストア接続失敗を確認してから提出版を固定します。
 
 ### SQLite migrationの実機確認
 

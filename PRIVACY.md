@@ -8,9 +8,9 @@ buy-againは、購入した商品の評価とメモを端末内に保存する�
 
 ## 開発者情報とお問い合わせ
 
-開発者：［公開する開発者名または事業者名に置き換えてください］
+開発者：naoki-webdev
 
-プライバシーに関するお問い合わせ：privacy@example.com
+プライバシーに関するお問い合わせ：https://github.com/naoki-webdev/buy-again/issues
 
 ## 端末内に保存する情報
 
@@ -92,9 +92,9 @@ buy-again is a personal app that stores ratings and notes about purchased produc
 
 ### Developer information and contact
 
-Developer: [Replace with the public developer or business name]
+Developer: naoki-webdev
 
-Privacy inquiries: privacy@example.com
+Privacy inquiries: https://github.com/naoki-webdev/buy-again/issues
 
 ### Information stored on the device
 

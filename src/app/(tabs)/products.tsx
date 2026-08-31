@@ -111,6 +111,7 @@ export default function ProductsScreen() {
               label={t(option.shortLabelKey)}
               selected={rating === option.value}
               color={option.color}
+              selectedBackgroundColor={option.backgroundColor}
               onPress={() => setRating(option.value)}
             />
           ))}
@@ -166,12 +167,14 @@ function FilterChip({
   selected,
   showDot = true,
   color = Colors.forest,
+  selectedBackgroundColor = Colors.forestSoft,
   onPress,
 }: {
   label: string;
   selected: boolean;
   showDot?: boolean;
   color?: string;
+  selectedBackgroundColor?: string;
   onPress: () => void;
 }) {
   return (
@@ -182,7 +185,10 @@ function FilterChip({
       accessibilityState={{ selected }}
       style={({ pressed }) => [
         styles.filterChip,
-        selected && { backgroundColor: color, borderColor: color },
+        selected && {
+          backgroundColor: selectedBackgroundColor,
+          borderColor: color,
+        },
         pressed && styles.pressed,
       ]}
     >
@@ -190,7 +196,7 @@ function FilterChip({
         <View
           style={[styles.chipDotSlot, selected && styles.chipDotSlotVisible]}
         >
-          <View style={[styles.chipDot, { backgroundColor: Colors.white }]} />
+          <View style={[styles.chipDot, { backgroundColor: color }]} />
         </View>
       ) : null}
       <Text style={[styles.filterText, selected && styles.selectedFilterText]}>
@@ -243,7 +249,7 @@ const styles = StyleSheet.create({
   chipDotSlotVisible: { opacity: 1 },
   chipDot: { width: 6, height: 6, borderRadius: 3 },
   filterText: { color: Colors.muted, fontSize: 12, fontWeight: "700" },
-  selectedFilterText: { color: Colors.white },
+  selectedFilterText: { color: Colors.ink },
   pressed: { opacity: 0.7 },
   resultCount: {
     color: Colors.muted,

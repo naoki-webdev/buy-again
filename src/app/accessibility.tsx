@@ -11,7 +11,6 @@ export default function AccessibilityScreen() {
   return (
     <Screen scroll style={styles.content}>
       <AppHeader
-        eyebrow={t("accessibility.eyebrow")}
         title={t("accessibility.title")}
         action={
           <IconButton

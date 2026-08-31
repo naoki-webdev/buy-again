@@ -355,11 +355,6 @@ export function ProductFormScreen({ mode }: ProductFormProps) {
           </View>
 
           <View style={styles.formIntro}>
-            <Text style={styles.kicker}>
-              {mode === "create"
-                ? t("form.create_kicker")
-                : t("form.edit_kicker")}
-            </Text>
             <Text style={styles.title}>
               {mode === "create"
                 ? t("form.create_heading")
@@ -548,12 +543,6 @@ const styles = StyleSheet.create({
   topBarTitle: { color: Colors.ink, fontSize: 15, fontWeight: "800" },
   topBarSpacer: { width: 42 },
   formIntro: { gap: 9, paddingBottom: 22 },
-  kicker: {
-    color: Colors.coral,
-    fontSize: 11,
-    fontWeight: "800",
-    letterSpacing: 1.2,
-  },
   title: {
     color: Colors.ink,
     fontSize: 30,

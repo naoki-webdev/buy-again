@@ -40,3 +40,11 @@ jobs:
 
       - name: Check formatting
         run: npx prettier --check .
+
+      - name: Export platform bundles
+        env:
+          EXPO_PUBLIC_IAP_ENV: test
+        run: |
+          npx expo export --platform web
+          npx expo export --platform ios
+          npx expo export --platform android
